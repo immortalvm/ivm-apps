@@ -1,8 +1,8 @@
 #ifndef IVM__OI_H
 #define IVM__IO_H
 
-void ivm64_new_frame(int width, int height, int rate);
+void ivm64_new_frame(long width, long height, long rate);
 
-void ivm64_set_pixel(int x, int y, int r, int g, int b);
+void ivm64_set_pixel(long x, long y, long r, long g, long b);
 
 #endif
