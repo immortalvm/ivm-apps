@@ -52,5 +52,9 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 
  
 
+* iVM IO
+
+Utility library for interfacing the iVM I/O devices.
+
 * Building
 
