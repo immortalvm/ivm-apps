@@ -1,0 +1,56 @@
+* Introduction
+
+The iVM-app is the SW module that is stored on the long-term storage medium and will be used in the future to decode the digital content stored after iVM boot. This app needs to be transcribed from the film and be feed into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the machine.
+
+iVM-app modules:
+ - *Bootstrap*: Program that is started by the virtual machine and decompresses the rest of the application. 
+ - *Unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
+ - *Assembler*: Assembles decoded images into files.
+ - *File decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices. The file decoder are using stadardized open source decoders and adapting the to iVM use.
+
+Modules the user needs to provide:
+ - *iVM implementation*: Implementation of iVM spesification With support for starting iVM-app from memory or file. The iVM must communicate with an image source device, feeding digitized images into the iVM and it must implement output devices support the formats provided by the iVM spesification.
+ - *iVM execution environment*: Operation system or similar where the iVM runs. 
+ - *Image source device*: Device capable of digitizing the frames on the storage medium.
+
+#+BEGIN_SRC ditaa 
+                    +----------------+
+                    | iVM-app        |
+                    |                |
+                    |                |
+                    |                |
+  +--------+        +----------------+         +--------+
+  | image  |        | iVM            |         | I/O    |
+  | source |        | implementation |         | device |
+  | device |        |                |         |        |
+  |        +------->+                +<------->+        |
+  +--------+        +----------------+         +--------+
+                    | execution      |
+                    | environment    |
+                    +----------------+
+#+END_SRC
+
+* File format decoders
+
+The file format decoders are based on standardized open-source components and slightly modified so it complies with the iVM-compiler.
+
+Since the iVM is not POSIX file system compilant, the libraries used cannot use any kind of file I/O. Similar, the iVM does not support multithreading so the library must be able to compile as a single threaded library. 
+
+
+The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-decoders/~, so that a ~make install~ will install the libraries in a folder where the ivm-app expects to find them.
+
+** TIFF 
+
+ - iVM repo: https://github.com/preservationvm/tiff-v4.1.0
+ - Source: libtiff-v4.1.0 from https://download.osgeo.org/libtiff
+ - Compiling: CC=ivm64-gcc ./configure --host ivm64 --prefix=<path>/ivm-apps/file-format-decoders
+
+
+** PDF
+
+
+
+ 
+
+* Building
+
