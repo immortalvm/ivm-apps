@@ -5,6 +5,7 @@ The iVM-app is the SW module that is stored on the long-term storage medium and 
 iVM-app modules:
  - *Bootstrap*: Program that is started by the virtual machine and decompresses the rest of the application. 
  - *Unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
+ - *AFS*: Archival file system, organises the frames on film into files.
  - *Assembler*: Assembles decoded images into files.
  - *File decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices. The file decoder are using stadardized open source decoders and adapting the to iVM use.
 
@@ -30,12 +31,28 @@ Modules the user needs to provide:
                     +----------------+
 #+END_SRC
 
+* Boxing and AFS library
+
+Core libraries for decoding frames and assembling frames into files.
+
+** Boxing
+
+ - iVM repo: https://github.com/preservationvm/boxing
+ - Source: libtiff-v4.1.0 from https://github.com/piql/boxing
+ - Compiling: CC=ivm64-gcc  CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing
+
+** AFS
+
+ - iVM repo: https://github.com/preservationvm/afs
+ - Source: libtiff-v4.1.0 from https://github.com/piql/afs
+ - Compiling: CC=ivm64-gcc CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing  LIBBOXING_DIR=<path>/ivm-apps/boxing
+
+
 * File format decoders
 
 The file format decoders are based on standardized open-source components and slightly modified so it complies with the iVM-compiler.
 
 Since the iVM is not POSIX file system compilant, the libraries used cannot use any kind of file I/O. Similar, the iVM does not support multithreading so the library must be able to compile as a single threaded library. 
-
 
 The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-decoders/~, so that a ~make install~ will install the libraries in a folder where the ivm-app expects to find them.
 
