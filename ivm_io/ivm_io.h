@@ -1,8 +1,12 @@
-#ifndef IVM__OI_H
+#ifndef IVM__IO_H
 #define IVM__IO_H
 
 void ivm64_new_frame(long width, long height, long rate);
 
 void ivm64_set_pixel(long x, long y, long r, long g, long b);
+
+void ivm64_read_frame(long frame, long& width, long& height);
+
+void ivm64_get_pixel(long x, long y, long r, long g, long b);
 
 #endif
