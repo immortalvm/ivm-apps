@@ -75,3 +75,7 @@ Utility library for interfacing the iVM I/O devices.
 
 * Building
 
+#+BEGIN_SRC sh
+./autgen.sh
+CC=ivm64-gcc ./configure --host ivm64
+#+END_SRC
