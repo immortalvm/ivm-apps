@@ -48,7 +48,10 @@ typedef struct afs_util_unbox_file_parameters_s
     DBOOL                  is_raw;
 } afs_util_unbox_file_parameters;
 
-  
+unsigned        afs_util_control_frame_format_count();
+boxing_config*  afs_util_control_frame_format(unsigned index);
+boxing_config** afs_util_control_frame_formats();
+
 int afs_util_unbox_control_frame(afs_control_data** control_data, boxing_image8* input_image, afs_util_unbox_cf_parameters* parameters);
 int afs_util_unbox_toc(afs_toc_data** toc, afs_util_unbox_toc_parameters* parameters);
 int afs_util_unbox_file(afs_toc_file* toc_file, afs_util_unbox_file_parameters* parameters, void* user);

@@ -14,14 +14,19 @@
 
 //  PROJECT INCLUDES
 //
+#include "afsutil.h"
 #include "boxing/unboxer_utility.h"
 #include "boxing/platform/memory.h"
 #include "boxing/utils.h"
 #include "controldata.h"
+#include "config_source_4k_controlframe_v7.h"
+#include "gvector.h"
+#include "sha1hash.h"
 
 //  DEFINES
 //
 
+//  PRIVATE GLOBALS
 static unsigned int metadata_content_type = BOXING_METADATA_CONTENT_TYPES_UNKNOWN;
 
 static const char * result_names[] =
@@ -35,18 +40,51 @@ static const char * result_names[] =
     "PROCESS CALLBACK ABORT"
 };
 
+static config_structure* control_frame_structures[] = { &config_source_v7 };
+static boxing_config* control_frame_formats[CONFIG_ARRAY_SIZE(control_frame_structures)] = { 0 };
+
 // PRIVATE INTERFACE
 //
 
-DBOOL gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned int length);
+int gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length);
 
 #ifdef BOXINGLIB_CALLBACK
 static int             unboxing_complete_callback(void * user, int* res, boxing_stats_decode * stats);
 static int             unboxing_metadata_complete_callback(void * user, int* res, boxing_metadata_list * meta_data);
+static const char *   get_process_result_name(enum boxing_unboxer_result result);
 #endif
 
 // PUBLIC AFS UTIL FUNCTIONS
 //
+
+unsigned afs_util_contol_frame_format_count()
+{
+    return CONFIG_ARRAY_SIZE(control_frame_structures);  
+}
+
+boxing_config* afs_util_control_frame_format(unsigned index)
+{
+    return (afs_util_control_frame_formats())[index];
+}
+
+boxing_config** afs_util_control_frame_formats()
+{
+    unsigned format_count = afs_util_contol_frame_format_count();
+    if (!format_count)
+    {
+        return NULL;
+    }
+  
+    if (control_frame_formats[0] == NULL)
+    {
+        for (unsigned i = 0; i < format_count; i++)
+        {
+            control_frame_formats[i] = boxing_config_create_from_structure(control_frame_structures[i]);
+        }
+    }
+
+    return control_frame_formats;
+}
 
 
 //----------------------------------------------------------------------------
@@ -62,22 +100,22 @@ static int             unboxing_metadata_complete_callback(void * user, int* res
  *  \return process result.
  */
 
-int afs_util_unbox_control_frame( afs_control_data** control_data, boxing_image8* input_image, DBOOL is_raw )
+int afs_util_unbox_control_frame(afs_control_data** control_data, boxing_image8* input_image, afs_util_unbox_cf_parameters* parameters )
 {
     // We try all the configurations for the control frame until we find the correct one
-    unsigned int count = boxing_get_control_frame_format_count();
+    unsigned int count = afs_util_control_frame_format_count();
 
     // Looking for formats for control frame
     int result = -1;
     for (int i = count - 1; i >= 0; i--)
     {
         // Get the name of the configuration from the configuration structure
-        const char* current_format_name = boxing_get_control_frame_configuration_name(i);
+        boxing_config* format = afs_util_control_frame_format(i);
        
         // Create utility to unbox file
         boxing_unboxer_utility* utility = boxing_unboxer_utility_create(
-            current_format_name,
-            is_raw
+            format,
+            parameters->is_raw
 #ifdef BOXINGLIB_CALLBACK
             ,unboxing_complete_callback, unboxing_metadata_complete_callback
 #endif
@@ -101,7 +139,7 @@ int afs_util_unbox_control_frame( afs_control_data** control_data, boxing_image8
         {
             *control_data = afs_control_data_create();
 
-            DBOOL load_ok = afs_control_data_load_string(*control_data, output_data->data);
+            DBOOL load_ok = afs_control_data_load_string(*control_data, output_data->buffer);
             if (load_ok == DFALSE)
             {
                 afs_control_data_free(*control_data);
@@ -143,14 +181,14 @@ int afs_util_unbox_toc(afs_toc_data** toc_data, afs_util_unbox_toc_parameters* p
     file_params.get_image = parameters->get_image;
     file_params.is_raw = parameters->is_raw;
     
-    int result = boxing_unbox_data_frame_file(toc_file, file_parameters, data);
+    int result = afs_util_unbox_file(toc_file, &file_params, data);
     if (result != 0)
     {
         gvector_free(data);
         return result;
     }
     *toc_data = afs_toc_data_create();
-    result = afs_toc_data_load_string(*toc_data, GVECTORN8(data, 0));
+    result = afs_toc_data_load_string(*toc_data, data->buffer);
 
     gvector_free(data);
     
@@ -172,24 +210,24 @@ int afs_util_unbox_toc(afs_toc_data** toc_data, afs_util_unbox_toc_parameters* p
  *  \return process result.
  */
 
-int boxing_unbox_data_frame_file(
+int afs_util_unbox_file(
     afs_toc_file* toc_file,
     afs_util_unbox_file_parameters* parameters,
     void* user )
 {
-    if (toc_file == NULL || parameters == NULL || )
+    if (toc_file == NULL || parameters == NULL)
     {
         return -1;
     }
 
     // Set the start and endbytes
-    unsigned int start_byte_number = current_toc->start_byte;
-    unsigned int end_byte_number = current_toc->end_byte;
+    unsigned int start_byte_number = toc_file->start_byte;
+    unsigned int end_byte_number = toc_file->end_byte;
 
     // Create utility to
     boxing_unboxer_utility* utility = boxing_unboxer_utility_create(
-        parameters.format,
-        parameters.is_raw
+        parameters->control_data->technical_metadata->afs_content_boxing_format->config,
+        parameters->is_raw
 #ifdef BOXINGLIB_CALLBACK
         , unboxing_complete_callback, unboxing_metadata_complete_callback
 #endif
@@ -204,8 +242,8 @@ int boxing_unbox_data_frame_file(
     int strip_size = boxing_codecdispatcher_get_stripe_size(utility->parameters->format) - 1;
 
     // Determine the number of the first frame with data (If the strip size is greater than 1).
-    int first_frame_with_data = (strip_size > 0) ? current_toc->start_frame + strip_size : current_toc->start_frame;
-    printf("First frame = %d, first frame with data = %d, last frame = %d\n", current_toc->start_frame, first_frame_with_data, current_toc->end_frame);
+    int first_frame_with_data = (strip_size > 0) ? toc_file->start_frame + strip_size : toc_file->start_frame;
+    printf("First frame = %d, first frame with data = %d, last frame = %d\n", toc_file->start_frame, first_frame_with_data, toc_file->end_frame);
 
     // Init hash
     afs_hash1_state sha;
@@ -213,14 +251,14 @@ int boxing_unbox_data_frame_file(
     
     // Unbox all frames in range
     unsigned int position = 0;
-    for (int i = current_toc->start_frame; i <= current_toc->end_frame; i++)
+    for (int i = toc_file->start_frame; i <= toc_file->end_frame; i++)
     {
         // Reset the signs of the first and last frames
         DBOOL is_last_frame = i == first_frame_with_data;
-        DBOOL is_first_frame = i == current_toc->end_frame;
+        DBOOL is_first_frame = i == toc_file->end_frame;
 
         // Get the frame
-        boxing_image* input_image;
+        boxing_image8* input_image;
         if (!parameters->get_image(&input_image, i))
         {
             boxing_unboxer_utility_free(utility);
@@ -234,8 +272,8 @@ int boxing_unbox_data_frame_file(
         result = boxing_unboxer_utility_unbox(utility, input_image, output_data);
 
         // Save output data
-        char* data = output_data->data;
-        unsigned length = putput_data->size;
+        char* data = output_data->buffer;
+        unsigned length = output_data->size;
         if (is_first_frame)
         {
             data += start_byte_number;
@@ -246,7 +284,7 @@ int boxing_unbox_data_frame_file(
             length = end_byte_number;
         }
 
-        if (!parameters->save_file(user, position, data, lenght))
+        if (!parameters->save_file(user, position, data, length))
         {
             boxing_image8_free(input_image);
             gvector_free(output_data);
@@ -255,7 +293,7 @@ int boxing_unbox_data_frame_file(
         }
 
         // Update hash
-        afs_sha1_process(&sha, data, lenght);
+        afs_sha1_process(&sha, data, length);
         
         boxing_image8_free(input_image);
         gvector_free(output_data);
@@ -365,11 +403,11 @@ static const char * get_process_result_name(enum boxing_unboxer_result result)
     return result_names[result];
 }
 
-DBOOL gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned int length)
+int gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length)
 {
-  gvector* data = user;
+  gvector* destination = user;
 
-  memcpy(GVECTORNU8(data,position), data, length);
+  memcpy(destination->buffer + position, data, length);
 
   return DTRUE;
 }

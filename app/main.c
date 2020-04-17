@@ -18,12 +18,18 @@ static void init_file(ivm_file* file, afs_toc_file* toc_file);
 
 
 // Vector of supported file formats
+typedef struct ivm_file_format
+{
 
+} ivm_file_formats[] = {};
 
 int main(int argc, char** argv)
 {
   // Decompress rest of application
 
+
+  // Code below here should be compressed...
+  
   // Assume for now all images are raw
   DBOOL is_raw = DTRUE;
   
@@ -36,12 +42,12 @@ int main(int argc, char** argv)
 
   // Decode control frame
   afs_util_unbox_cf_parameters cf_params;
-  cf_params.formats = &
-  cf_params.format_count = 1;
+  cf_params.formats = afs_util_control_frame_formats();
+  cf_params.format_count = afs_util_control_frame_format_count();
   cf_params.is_raw = is_raw;
 
   afs_control_data* control_data;
-  int result = afs_util_unbox_control_frame(&control_data, cf, is_raw);
+  int result = afs_util_unbox_control_frame(&control_data, cf, &cf_params);
   if (result != 0)
   {
       return 1;
