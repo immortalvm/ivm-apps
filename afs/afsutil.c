@@ -45,9 +45,6 @@ static boxing_config* control_frame_formats[CONFIG_ARRAY_SIZE(control_frame_stru
 
 // PRIVATE INTERFACE
 //
-
-int gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length);
-
 #ifdef BOXINGLIB_CALLBACK
 static int             unboxing_complete_callback(void * user, int* res, boxing_stats_decode * stats);
 static int             unboxing_metadata_complete_callback(void * user, int* res, boxing_metadata_list * meta_data);
@@ -57,7 +54,7 @@ static const char *   get_process_result_name(enum boxing_unboxer_result result)
 // PUBLIC AFS UTIL FUNCTIONS
 //
 
-unsigned afs_util_contol_frame_format_count()
+unsigned afs_util_control_frame_format_count()
 {
     return CONFIG_ARRAY_SIZE(control_frame_structures);  
 }
@@ -69,7 +66,7 @@ boxing_config* afs_util_control_frame_format(unsigned index)
 
 boxing_config** afs_util_control_frame_formats()
 {
-    unsigned format_count = afs_util_contol_frame_format_count();
+    unsigned format_count = afs_util_control_frame_format_count();
     if (!format_count)
     {
         return NULL;
@@ -176,7 +173,7 @@ int afs_util_unbox_toc(afs_toc_data** toc_data, afs_util_unbox_toc_parameters* p
     gvector* data = gvector_create(1, toc_file->size);
 
     afs_util_unbox_file_parameters file_params;
-    file_params.save_file = gvector_save_file_callback;
+    file_params.save_file = afs_util_gvector_save_file_callback;
     file_params.control_data = parameters->control_data;
     file_params.get_image = parameters->get_image;
     file_params.is_raw = parameters->is_raw;
@@ -403,7 +400,7 @@ static const char * get_process_result_name(enum boxing_unboxer_result result)
     return result_names[result];
 }
 
-int gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length)
+int afs_util_gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length)
 {
   gvector* destination = user;
 

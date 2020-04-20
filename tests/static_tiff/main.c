@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
         uint32* p = raster;
         for (uint32 y = 0; y < h; y++ ) {
           for (uint32 x = 0; x < w; x++ ) {
-            ivm64_set_pixel(x, y, TIFFGetR(*p), TIFFGetG(*p), TIFFGetG(*p));
+            ivm64_set_pixel(x, y, TIFFGetR(*p), TIFFGetG(*p), TIFFGetB(*p));
             p++;
           }
         }

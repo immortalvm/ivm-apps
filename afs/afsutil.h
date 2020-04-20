@@ -23,6 +23,8 @@ extern "C" {
 #include "controldata.h"
 #include "tocdata_c.h"
 
+// TYPEDEFS
+// 
 typedef DBOOL (*afs_get_image_callback)(boxing_image8** image, unsigned int frame);
 typedef DBOOL (*afs_save_file_callback)(void* user, int position, unsigned char* data, unsigned long length);
 
@@ -48,6 +50,9 @@ typedef struct afs_util_unbox_file_parameters_s
     DBOOL                  is_raw;
 } afs_util_unbox_file_parameters;
 
+
+int afs_util_gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length);
+  
 unsigned        afs_util_control_frame_format_count();
 boxing_config*  afs_util_control_frame_format(unsigned index);
 boxing_config** afs_util_control_frame_formats();
