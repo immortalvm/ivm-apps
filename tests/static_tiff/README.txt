@@ -13,7 +13,7 @@ ivm64-gcc main.c \
 mkdir out
 
 # Run with ivm C implementation
-sed -i -e 's/as-run  --noopt -m $MAXMEM//' a.out ; ./a.out
+sed -i -e 's/as-run  --noopt -m $MAXMEM//' a.out
 ../../../ivm-implementations/OtherMachines/vm a.b -o out
 
 # Run with C# implementation

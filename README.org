@@ -56,6 +56,11 @@ Since the iVM is not POSIX file system compilant, the libraries used cannot use 
 
 The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-decoders/~, so that a ~make install~ will install the libraries in a folder where the ivm-app expects to find them.
 
+** ZLIB
+
+ - Source: http://www.zlib.net/zlib-1.2.11.tar.gz
+ - Compiling: CC=ivm64-gcc ./configure --static --prefix=<path>/ivm-apps/file-format-decoders
+
 ** TIFF 
 
  - iVM repo: https://github.com/preservationvm/tiff-v4.1.0
@@ -66,12 +71,13 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 ** PDF
 
 
-
- 
-
 * iVM IO
 
 Utility library for interfacing the iVM I/O devices.
 
 * Building
 
+#+BEGIN_SRC sh
+./autgen.sh
+CC=ivm64-gcc ./configure --host ivm64
+#+END_SRC
