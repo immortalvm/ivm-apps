@@ -3,6 +3,7 @@ noinst_PROGRAMS = ivmapp
 
 ivmapp_CFLAGS = \
      $(AM_CFLAGS) \
+     -Xlinker -mdce \
      -I${top_srcdir} \
      -I${top_srcdir}/afs \
      -I${top_srcdir}/boxing/inc \
@@ -18,6 +19,7 @@ ivmapp_LDADD = \
 ivmapp_SOURCES = \
      main.c \
      ../afs/afsutil.c \
+     ../ivm_io/ivm_io.c \
      ../ivm_formats/ivm_format_tiff.c \
      ../ivm_formats/ivm_format_zlib.c \
      ../ivm_formats/ivm_formats.c

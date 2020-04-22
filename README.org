@@ -3,7 +3,7 @@
 The iVM-app is the SW module that is stored on the long-term storage medium and will be used in the future to decode the digital content stored after iVM boot. This app needs to be transcribed from the film and be feed into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the machine.
 
 iVM-app modules:
- - *Bootstrap*: Program that is started by the virtual machine and decompresses the rest of the application. 
+ - *Initial program*: Program that is started by the virtual machine and decompresses the rest of the application. 
  - *Unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
  - *AFS*: Archival file system, organises the frames on film into files.
  - *Assembler*: Assembles decoded images into files.
@@ -69,7 +69,26 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 
 
 ** PDF
-
+CC=ivm64-gcc cmake \
+ -DBUILD_GTK_TESTS=OFF \
+ -DBUILD_QT5_TESTS=OFF\
+ -DBUILD_CPP_TESTS=OFF\
+ -DENABLE_SPLASH=OFF\
+ -DENABLE_UTILS=OFF\
+ -DENABLE_CPP=OFF\
+ -DENABLE_GLIB=OFF\
+ -DENABLE_GOBJECT_INTROSPECTION=OFF\
+ -DENABLE_GTK_DOC=OFF\
+ -DENABLE_QT5=OFF\
+ -DENABLE_LIBOPENJPEG=none\
+ -DENABLE_CMS=none\
+ -DENABLE_DCTDECODER=none\
+ -DENABLE_LIBCURL=OFF\
+ -DENABLE_ZLIB=OFF\
+ -DENABLE_ZLIB_UNCOMPRESS=OFF\
+ -DBUILD_SHARED_LIBS=OFF\
+ -DRUN_GPERF_IF_PRESENT=OFF\
+ ..  
 
 * iVM IO
 

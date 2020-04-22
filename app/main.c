@@ -7,13 +7,14 @@
 static int get_image(boxing_image8** image, unsigned frame);
 static int save_file(void* user, int position, unsigned char* data, unsigned long size);
 static ivm_file_format* get_ivm_format(afs_toc_file* file);
+static int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw);
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 int main(int argc, char** argv)
 {
   // Decompress rest of application
-
+  printf("starting ivm-app\n");
 
   // Code below here should be compressed...
   
@@ -44,7 +45,15 @@ int main(int argc, char** argv)
   cf = NULL;
 
   // Read application from film and decompress
-  
+  result = read_and_exec_app(control_data, is_raw);
+  afs_control_data_free(control_data);
+  return result;
+}
+
+int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
+{
+  // Check if control data has an iVM block
+
   
   // Code below here should be on film
   
@@ -57,7 +66,7 @@ int main(int argc, char** argv)
   afs_toc_file * toc_file = afs_toc_files_get_toc(control_data->technical_metadata->afs_tocs, 0);
 
   afs_toc_data* toc_data;
-  result = afs_util_unbox_toc(&toc_data, &toc_params);
+  int result = afs_util_unbox_toc(&toc_data, &toc_params);
   if (result != 0)
   {
       return 1;
@@ -99,23 +108,33 @@ int main(int argc, char** argv)
       }
     }
   }
-}
 
+  return 0;
+}
 
 static DBOOL get_image(boxing_image8** image, unsigned frame)
 {
+    printf("reading image %d\n",frame);
+
+    static int frame_index = 0;
+  
     long width;
     long height;
-    ivm64_read_frame(frame, &width, &height);
-
-    if (width == 0 || height == 0)
+    while ( frame_index <= frame )
     {
-        return DFALSE;
+        ivm64_read_frame(&width, &height);
+        if (width == 0 || height == 0)
+        {
+            printf("Illegal image size: %dx%d\n", width, height);
+            return DFALSE;
+        }
+        frame_index++;
     }
-
+    
     *image = boxing_image8_create(width, height);
     if (*image == NULL)
     {
+        printf("Failed to allocate image with size: %dx%d\n", width, height);
         return DFALSE;
     }
 
@@ -124,9 +143,11 @@ static DBOOL get_image(boxing_image8** image, unsigned frame)
     {
         for (long x = 0; x < width; x++)
         {
-            long r,g,b;
-            ivm64_get_pixel(x, y, r, g, b);
-
+            long pixel = ivm64_read_pixel(x, y);
+            long r = pixel >> (8*4);
+            long g = pixel >> (8*2);
+            long b = pixel >> (8*0);
+            
             *data = (boxing_image8_pixel)(r & 0xff);
             data++;
             *data = (boxing_image8_pixel)(g & 0xff);
