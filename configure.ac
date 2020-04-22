@@ -53,7 +53,8 @@ AC_CHECK_FUNCS([floor memmove memset pow sqrt strcasecmp strchr strtol strtoull]
 
 AC_CONFIG_FILES([
     Makefile
-    app/Makefile])
+    app/Makefile
+    tests/static_tiff/Makefile])
 AC_OUTPUT
 AC_MSG_RESULT([
         $PACKAGE $VERSION
