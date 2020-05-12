@@ -303,9 +303,9 @@ int afs_util_unbox_file(
         }
         position += length;
 
-        FILE* f = fopen("temp.bin","w");
-        fwrite(data, length, 1, f);
-        fclose(f);
+        //FILE* f = fopen("temp.bin","w");
+        //fwrite(data, length, 1, f);
+        //fclose(f);
         
         // Update hash
         afs_sha1_process(&sha, data, length);

@@ -16,7 +16,7 @@ ivmapp_CFLAGS = \
 ivmapp_LDADD = \
      -lunboxing \
      -lafs \
-     -lm -ltiff -lz
+     -lm -ltiff -ljpeg -lz
 
 if ! IVM_COMPILE
 ivmapp_LDADD += \

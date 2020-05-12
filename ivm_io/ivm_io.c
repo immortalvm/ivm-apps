@@ -120,6 +120,7 @@ long ivm64_read_pixel(long x, long y)
   return v;
 }
 
+#ifndef __ivm64__
 
 // Emulated functions
 static void spaceInit(Space* s) {
@@ -233,3 +234,5 @@ static void ioReadFrame(long frameindex) {
 static uint8_t ioReadPixel(uint16_t x, uint16_t y) {
   return *((uint8_t*) currentInImage.array + currentInRowbytes * y + x);
 }
+
+#endif
