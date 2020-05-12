@@ -97,38 +97,19 @@ Utility library for interfacing the iVM I/O devices.
 * Building
 
 #+BEGIN_SRC sh
-export IVMROOT=$PWD
 
+# Get code
 git clone https://github.com/preservationvm/ivm-apps.git
-
 git clone https://github.com/preservationvm/boxing.git
-pushd boxing
-CC=ivm64-gcc  CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/boxing
-make && make install
-popd
-
 git clone https://github.com/preservationvm/afs.git
-pushd afs
-CC=ivm64-gcc CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/boxing  LIBBOXING_DIR=$IVMROOT/ivm-apps/boxing
-make && make install
-popd
-
+git clone https://github.com/preservationvm/tiff-v4.1.0
 wget http://www.zlib.net/zlib-1.2.11.tar.gz
 tar xJf zlib-1.2.11.gz 
-pushd zlib-1.2.11 
-CC=ivm64-gcc ./configure --static --prefix=$IVMROOT/ivm-apps/file-format-decoders
-make && make install
-popd
 
-git clone https://github.com/preservationvm/tiff-v4.1.0
-pushd tiff-v4.1.0
-CC=ivm64-gcc ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/file-format-decoders
-make && make install
-popd
+# Build - edit script to disable cross compiling
+./build-libs.sh
 
-cd ivm-apps
-./autgen.sh
-CC=ivm64-gcc ./configure --host ivm64
-make
+# Build apps
+./build-apps.sh
 
 #+END_SRC

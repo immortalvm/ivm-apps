@@ -1,6 +1,7 @@
 #include "ivm_format_zlib.h"
 
 #include "zlib.h"
+#include <stdint.h>
 
 static int zlib_uncompress(const uint8_t* src, unsigned src_len, uint8_t* dest, unsigned dest_len);
 

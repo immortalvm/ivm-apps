@@ -4,6 +4,8 @@
 #include "tocfile.h"
 #include "ivm_formats/ivm_formats.h"
 
+#define LOGGING_ENABLED 1
+
 static int get_image(boxing_image8** image, unsigned frame);
 static int save_file(void* user, int position, unsigned char* data, unsigned long size);
 static ivm_file_format* get_ivm_format(afs_toc_file* file);
@@ -23,7 +25,7 @@ int main(int argc, char** argv)
   
   // Read control frame from input device
   boxing_image8* cf;
-  if (get_image(&cf, 0) != DTRUE)
+  if (get_image(&cf, 1) != DTRUE)
   {
     return 1;
   }
@@ -38,6 +40,7 @@ int main(int argc, char** argv)
   int result = afs_util_unbox_control_frame(&control_data, cf, &cf_params);
   if (result != 0)
   {
+      printf("control frame extraction failed\n");
       return 1;
   }
 
@@ -69,22 +72,28 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
   int result = afs_util_unbox_toc(&toc_data, &toc_params);
   if (result != 0)
   {
-      return 1;
+    printf("toc extraction failed\n");
+    return 1;
   }
 
   // Decode all supported files
   unsigned int reel_count = afs_toc_data_reel_count(toc_data);
+  printf("Found %u reels\n", reel_count);
   if (reel_count)
   {
     afs_toc_data_reel* reel = afs_toc_data_get_reel_by_index(toc_data, 0);
 
     unsigned int file_count = afs_toc_data_reel_file_count(reel);
 
+    printf("Found %u files\n", file_count);
+    
     for (unsigned int f = 0; f < file_count; f++)
     {
       afs_toc_file* toc_file = afs_toc_data_reel_get_file_by_index(reel, f);
 
       ivm_file_format* ivm_format = get_ivm_format(toc_file);
+
+      printf("%s: format=%s size=%ld\n", toc_file->name, toc_file->file_format, toc_file->size);
       
       if (ivm_format != NULL)
       {
@@ -114,27 +123,21 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
 
 static DBOOL get_image(boxing_image8** image, unsigned frame)
 {
-    printf("reading image %d\n",frame);
+    printf("reading image %u\n",frame);
 
-    static int frame_index = 0;
-  
     long width;
     long height;
-    while ( frame_index <= frame )
+    ivm64_read_frame(&width, &height, frame);
+    if (width == 0 || height == 0)
     {
-        ivm64_read_frame(&width, &height);
-        if (width == 0 || height == 0)
-        {
-            printf("Illegal image size: %dx%d\n", width, height);
-            return DFALSE;
-        }
-        frame_index++;
+        printf("Illegal image size: %ldx%ld\n", width, height);
+        return DFALSE;
     }
     
     *image = boxing_image8_create(width, height);
     if (*image == NULL)
     {
-        printf("Failed to allocate image with size: %dx%d\n", width, height);
+        printf("Failed to allocate image with size: %ldx%ld\n", width, height);
         return DFALSE;
     }
 
@@ -143,20 +146,14 @@ static DBOOL get_image(boxing_image8** image, unsigned frame)
     {
         for (long x = 0; x < width; x++)
         {
-            long pixel = ivm64_read_pixel(x, y);
-            long r = pixel >> (8*4);
-            long g = pixel >> (8*2);
-            long b = pixel >> (8*0);
+            uint8_t pixel = ivm64_read_pixel(x, y);
             
-            *data = (boxing_image8_pixel)(r & 0xff);
-            data++;
-            *data = (boxing_image8_pixel)(g & 0xff);
-            data++;
-            *data = (boxing_image8_pixel)(b & 0xff);
+            *data = (boxing_image8_pixel)(pixel);
             data++;
         }
     }
 
+    printf("reading image %u complete\n",frame);
     return DTRUE;
 }
 
@@ -178,6 +175,8 @@ static ivm_file_format* get_ivm_format(afs_toc_file* file)
 }
 
 #if defined (LOGGING_ENABLED)
+#include <stdarg.h>
+
 void boxing_log(int log_level, const char * string)
 {
     printf("%d : %s\n", log_level, string);
