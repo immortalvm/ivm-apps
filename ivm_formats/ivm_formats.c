@@ -6,7 +6,7 @@
 
 static ivm_file_format ivm_file_formats[] =
 {
-  { "TIFF", ivm_file_format_tiff_render, NULL },
+  { "afs/tiff", ivm_file_format_tiff_render, NULL },
   { "ZLIB", NULL, ivm_file_format_zlib_decode }
 };
 

@@ -59,14 +59,15 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 ** ZLIB
 
  - Source: http://www.zlib.net/zlib-1.2.11.tar.gz
- - Compiling: CC=ivm64-gcc ./configure --static --prefix=<path>/ivm-apps/file-format-decoders
+
+** JPEG
+
+ - Source: http://ijg.org/files/jpegsrc.v9d.tar.gz
 
 ** TIFF 
 
  - iVM repo: https://github.com/preservationvm/tiff-v4.1.0
  - Source: libtiff-v4.1.0 from https://download.osgeo.org/libtiff
- - Compiling: CC=ivm64-gcc ./configure --host ivm64 --prefix=<path>/ivm-apps/file-format-decoders
-
 
 ** PDF
 CC=ivm64-gcc cmake \
@@ -97,38 +98,37 @@ Utility library for interfacing the iVM I/O devices.
 * Building
 
 #+BEGIN_SRC sh
-export IVMROOT=$PWD
 
+# Get code
 git clone https://github.com/preservationvm/ivm-apps.git
-
 git clone https://github.com/preservationvm/boxing.git
-pushd boxing
-CC=ivm64-gcc  CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/boxing
-make && make install
-popd
-
 git clone https://github.com/preservationvm/afs.git
-pushd afs
-CC=ivm64-gcc CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/boxing  LIBBOXING_DIR=$IVMROOT/ivm-apps/boxing
-make && make install
-popd
-
+git clone https://github.com/preservationvm/tiff-v4.1.0
 wget http://www.zlib.net/zlib-1.2.11.tar.gz
 tar xJf zlib-1.2.11.gz 
-pushd zlib-1.2.11 
-CC=ivm64-gcc ./configure --static --prefix=$IVMROOT/ivm-apps/file-format-decoders
-make && make install
+wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf -
+
+pushd jpeg-9d
+patch << EOF
+diff --git a/config.sub b/config.sub
+index 9ccf09a..dae85e6 100755
+--- a/config.sub
++++ b/config.sub
+@@ -314,6 +314,7 @@ case $basic_machine in
+        | visium \
+        | wasm32 \
+        | x86 | xc16x | xstormy16 | xtensa \
++    | ivm64 \
+        | z8k | z80)
+                basic_machine=$basic_machine-unknown
+                ;;
+EOF
 popd
 
-git clone https://github.com/preservationvm/tiff-v4.1.0
-pushd tiff-v4.1.0
-CC=ivm64-gcc ./configure --host ivm64 --prefix=$IVMROOT/ivm-apps/file-format-decoders
-make && make install
-popd
+# Build - edit script to disable cross compiling
+./build-libs.sh
 
-cd ivm-apps
-./autgen.sh
-CC=ivm64-gcc ./configure --host ivm64
-make
+# Build apps
+./build-apps.sh
 
 #+END_SRC

@@ -74,8 +74,10 @@ boxing_config** afs_util_control_frame_formats()
   
     if (control_frame_formats[0] == NULL)
     {
+        printf("Initializing control frame formats\n");
         for (unsigned i = 0; i < format_count; i++)
         {
+            printf("Creating format version=%s, classes=%d\n", control_frame_structures[i]->version, control_frame_structures[i]->count);
             control_frame_formats[i] = boxing_config_create_from_structure(control_frame_structures[i]);
         }
     }
@@ -122,6 +124,7 @@ int afs_util_unbox_control_frame(afs_control_data** control_data, boxing_image8*
         {
             continue;
         }
+        printf("Unboxing utility created\n");
 
         // Allocate vector for for the output data
         gvector* output_data = gvector_create(1, 0);
@@ -145,9 +148,6 @@ int afs_util_unbox_control_frame(afs_control_data** control_data, boxing_image8*
 
                 return -1;
             }
-
-            boxing_unboxer_utility_free(utility);
-            gvector_free(output_data);
             break;
         }
 
@@ -174,22 +174,23 @@ int afs_util_unbox_toc(afs_toc_data** toc_data, afs_util_unbox_toc_parameters* p
 
     afs_util_unbox_file_parameters file_params;
     file_params.save_file = afs_util_gvector_save_file_callback;
-    file_params.control_data = parameters->control_data;
+    file_params.control_data = cd;
     file_params.get_image = parameters->get_image;
     file_params.is_raw = parameters->is_raw;
     
     int result = afs_util_unbox_file(toc_file, &file_params, data);
     if (result != 0)
     {
+        printf("TOC unboxing failed with error code=%d\n", result);
         gvector_free(data);
         return result;
     }
     *toc_data = afs_toc_data_create();
-    result = afs_toc_data_load_string(*toc_data, data->buffer);
+    DBOOL ok = afs_toc_data_load_string(*toc_data, data->buffer);
 
     gvector_free(data);
     
-    return result;
+    return ok ? 0 : 1;
 }
 
 
@@ -221,9 +222,11 @@ int afs_util_unbox_file(
     unsigned int start_byte_number = toc_file->start_byte;
     unsigned int end_byte_number = toc_file->end_byte;
 
-    // Create utility to
+    boxing_config * format = parameters->control_data->technical_metadata->afs_content_boxing_format->config;
+    
+    // Create utility 
     boxing_unboxer_utility* utility = boxing_unboxer_utility_create(
-        parameters->control_data->technical_metadata->afs_content_boxing_format->config,
+        format,
         parameters->is_raw
 #ifdef BOXINGLIB_CALLBACK
         , unboxing_complete_callback, unboxing_metadata_complete_callback
@@ -232,6 +235,7 @@ int afs_util_unbox_file(
 
     if (utility == NULL)
     {
+        printf("Failed to create utility\n");
         return -1;
     }
 
@@ -240,6 +244,7 @@ int afs_util_unbox_file(
 
     // Determine the number of the first frame with data (If the strip size is greater than 1).
     int first_frame_with_data = (strip_size > 0) ? toc_file->start_frame + strip_size : toc_file->start_frame;
+    printf("Unboxing file name=%s, size=%lu, format=%s\n", toc_file->name, toc_file->size, toc_file->file_format);
     printf("First frame = %d, first frame with data = %d, last frame = %d\n", toc_file->start_frame, first_frame_with_data, toc_file->end_frame);
 
     // Init hash
@@ -250,7 +255,6 @@ int afs_util_unbox_file(
     unsigned int position = 0;
     for (int i = toc_file->start_frame; i <= toc_file->end_frame; i++)
     {
-        // Reset the signs of the first and last frames
         DBOOL is_last_frame = i == first_frame_with_data;
         DBOOL is_first_frame = i == toc_file->end_frame;
 
@@ -258,6 +262,7 @@ int afs_util_unbox_file(
         boxing_image8* input_image;
         if (!parameters->get_image(&input_image, i))
         {
+            printf("Failed to read image\n");
             boxing_unboxer_utility_free(utility);
             return -1;    
         }
@@ -267,7 +272,13 @@ int afs_util_unbox_file(
 
         // Unbox image
         result = boxing_unboxer_utility_unbox(utility, input_image, output_data);
-
+        if (result != 0)
+        {
+            printf("Failed to unbox image\n");
+            boxing_unboxer_utility_free(utility);
+            return -1;    
+        }
+        
         // Save output data
         char* data = output_data->buffer;
         unsigned length = output_data->size;
@@ -276,19 +287,26 @@ int afs_util_unbox_file(
             data += start_byte_number;
             length -= start_byte_number;
         }
-        else if (is_last_frame)
+        if (is_last_frame)
         {
-            length = end_byte_number;
+            length -= output_data->size - (end_byte_number+1);
         }
 
         if (!parameters->save_file(user, position, data, length))
         {
+            printf("Failed to save unboxed data\n");
+            
             boxing_image8_free(input_image);
             gvector_free(output_data);
             boxing_unboxer_utility_free(utility);
             return -1;
         }
+        position += length;
 
+        //FILE* f = fopen("temp.bin","w");
+        //fwrite(data, length, 1, f);
+        //fclose(f);
+        
         // Update hash
         afs_sha1_process(&sha, data, length);
         
@@ -299,12 +317,20 @@ int afs_util_unbox_file(
     // Check the hash
     unsigned char hash[256];
     afs_sha1_done(&sha, hash);
+
+    char hashstring[256];
+    afs_sha1_hash_to_hex_string(hash, hashstring);
     
-    if (!boxing_string_equal(toc_file->checksum, hash))
+    if (!boxing_string_equal(toc_file->checksum, hashstring))
     {
+        printf("Checksums not matching: %s vs %s\n", toc_file->checksum, hashstring);
         result = -1;
     }
 
+    // 605e253f01ff8ca4e9da2cec98e6677929095294 vs
+    // 4b80e413be57e2d807c206fc30055939923e227e
+
+    
     // Freeing memory
     boxing_unboxer_utility_free(utility);
 
@@ -402,9 +428,23 @@ static const char * get_process_result_name(enum boxing_unboxer_result result)
 
 int afs_util_gvector_save_file_callback(void* user, int position, unsigned char* data, unsigned long length)
 {
+  /*
+  static int run;
+
+  if (run>0)
+  return DTRUE;
+  run++;
+  */
+
+  printf("0x%lx pos=%d size=%lu\n", (unsigned long)user, position, length);
   gvector* destination = user;
 
+  if (position >= destination->size)
+  {
+      return DFALSE;
+  }
+  
   memcpy(destination->buffer + position, data, length);
-
+  
   return DTRUE;
 }

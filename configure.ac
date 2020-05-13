@@ -50,11 +50,13 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_CHECK_FUNCS([floor memmove memset pow sqrt strcasecmp strchr strtol strtoull])
 
 # Checks for command line options
-
+AC_ARG_VAR(LIBBOXING_DIR, path to boxing lib)
+AM_CONDITIONAL([IVM_COMPILE], [test "x$CC" = "xivm64-gcc"])
 AC_CONFIG_FILES([
     Makefile
     app/Makefile
-    tests/static_tiff/Makefile])
+    tests/static_tiff/Makefile
+    tests/boxing_config/Makefile])
 AC_OUTPUT
 AC_MSG_RESULT([
         $PACKAGE $VERSION

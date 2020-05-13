@@ -1,21 +1,28 @@
 
 noinst_PROGRAMS = ivmapp
 
+#     -Xlinker -mdce 
+
 ivmapp_CFLAGS = \
      $(AM_CFLAGS) \
-     -Xlinker -mdce \
      -I${top_srcdir} \
      -I${top_srcdir}/afs \
      -I${top_srcdir}/boxing/inc \
      -I${top_srcdir}/boxing/thirdparty/glib \
      -I${top_srcdir}/boxing/thirdparty/minixml/inc \
      -I${top_srcdir}/file-format-decoders/include \
-     -L${top_srcdir}/file-format-decoders/lib
+     -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
+     -L$(LIBBOXING_DIR) 
 ivmapp_LDADD = \
-     ${top_builddir}/boxing/lib/libafs.a \
-     ${top_builddir}/boxing/lib/libunboxing.a \
-     ${top_builddir}/boxing/lib/libafs.a \
-     -lm -ltiff -lz
+     -lunboxing \
+     -lafs \
+     -lm -ltiff -ljpeg -lz
+
+if ! IVM_COMPILE
+ivmapp_LDADD += \
+     -lpng
+endif
+
 ivmapp_SOURCES = \
      main.c \
      ../afs/afsutil.c \
