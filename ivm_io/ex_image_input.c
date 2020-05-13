@@ -5,11 +5,20 @@
 
 int main()
 {
-  long width = -1, height = -1;
+  long width = 333, height = 444;
 
-  ivm64_read_frame (&width, &height);
+  ivm64_read_frame (0, &width, &height); /* TODO: generalize to n frames */
 
   printf ("ivm64_read_frame: width=%ld, height=%ld\n", width, height);
+
+  if (width + height == 0) 
+    {
+      puts ("No frames found");
+      return 1;
+    }
+  
+  
+
 
   long v;
   
