@@ -84,7 +84,7 @@ void ivm64_read_frame(long* widthp, long* heightp, long frameindex)
   /* Idem: */
   asm volatile("store8! (+  8 %[w])" : [w] "=m" (width) : );
 #else
-  printf ("read_frame index=%lu\n",number);
+  printf ("read_frame index=%lu\n",frameindex);
 
   static int init;
   if (init == 0) {
@@ -92,7 +92,7 @@ void ivm64_read_frame(long* widthp, long* heightp, long frameindex)
     init = 1;
   }
   
-  ioReadFrame(number);
+  ioReadFrame(frameindex);
   width = currentInWidth;
   height = currentInHeight;
   

@@ -7,7 +7,7 @@ int main()
 {
   long width = 333, height = 444;
 
-  ivm64_read_frame (0, &width, &height); /* TODO: generalize to n frames */
+  ivm64_read_frame (&width, &height, 0); /* TODO: generalize to n frames */
 
   printf ("ivm64_read_frame: width=%ld, height=%ld\n", width, height);
 
@@ -17,12 +17,8 @@ int main()
       return 1;
     }
   
-  
-
-
   long v;
   
-
   puts ("ivm64_read_pixel:");
   
   for (long j = 0; j < height; j++) 
