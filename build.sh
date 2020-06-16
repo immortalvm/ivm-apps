@@ -44,6 +44,13 @@ else
     exit 1
 fi
 
+if [ "$BUILD" != "app" ] && [ "$BUILD" != "lib" ] && [ "$BUILD" != "all" ]; then
+    echo "Illegal build target: $BUILD";
+fi
+
+
+echo "TARGETS: ${TARGETS[*]}"
+echo "BUILDING: ${BUILD[*]}"
 
 # Build LIBS?
 if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
@@ -61,31 +68,32 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         mkdir boxing
         pushd boxing
         CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../boxing/configure $HOST --prefix=$BUILDROOT/boxing
-        make && make install 
+        make && make install  || { popd ; exit 1; }
         popd
         
         mkdir afs
         pushd afs
         CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../afs/configure $HOST --prefix=$BUILDROOT/boxing LIBBOXING_DIR=$BUILDROOT/boxing
-        make && make install 
+        make && make install  || { popd ; exit 1; }
         popd
         
         mkdir zlib-1.2.11
         pushd zlib-1.2.11 
         CC=$COMPILER $ROOT/../zlib-1.2.11/configure --static --prefix=$BUILDROOT/file-format-decoders
-        make && make install || exit
+        make && make install || { popd ; exit 1; }
         popd
 
         mkdir jpeg-9d
         pushd jpeg-9d 
         CC=$COMPILER $ROOT/../jpeg-9d/configure --enable-shared=no --enable-static=yes $HOST --prefix=$BUILDROOT/file-format-decoders
-        make && make install || exit
+        make && make install  || { popd ; exit 1; }
         popd
         
         mkdir tiff-4.1.0
         pushd tiff-4.1.0
         CC=$COMPILER $ROOT/../tiff-4.1.0/configure \
           $HOST --prefix=$BUILDROOT/file-format-decoders \
+          --enable-shared=no \
           --with-zlib-include-dir=$BUILDROOT/file-format-decoders/include \
           --with-zlib-lib-dir=$BUILDROOT/file-format-decoders/lib \
           --with-jpeg-include-dir=$BUILDROOT/file-format-decoders/include \

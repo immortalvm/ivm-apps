@@ -19,5 +19,6 @@ typedef struct ivm_file_format_s
 
 unsigned         ivm_file_format_count();
 ivm_file_format* ivm_file_format_get(unsigned index);
+ivm_file_format* ivm_file_format_find(char * name);
 
 #endif

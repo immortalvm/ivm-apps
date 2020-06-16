@@ -77,6 +77,8 @@ void ivm64_read_frame(long* widthp, long* heightp, long frameindex)
      and instead write directly to the args in the asm below? */
 
 #ifdef __ivm64__
+  printf ("read_frame index=%lu\n",frameindex);
+
   /* Pushes 16 bytes on the stack (first width, then height): */
   asm volatile("read_frame! (load8 %[n])" : : [n] "m" (frameindex));
   /* Pops 8 bytes form the stack: */

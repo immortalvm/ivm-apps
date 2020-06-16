@@ -10,7 +10,7 @@ ivmapp_CFLAGS = \
      -I${top_srcdir}/boxing/inc \
      -I${top_srcdir}/boxing/thirdparty/glib \
      -I${top_srcdir}/boxing/thirdparty/minixml/inc \
-     -I${top_srcdir}/file-format-decoders/include \
+     -I../file-format-decoders/include \
      -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
      -L$(LIBBOXING_DIR) 
 ivmapp_LDADD = \
@@ -29,6 +29,7 @@ ivmapp_SOURCES = \
      ../ivm_io/ivm_io.c \
      ../ivm_formats/ivm_format_tiff.c \
      ../ivm_formats/ivm_format_zlib.c \
+     ../ivm_formats/ivm_format_jpeg.c \
      ../ivm_formats/ivm_formats.c
 
 check_PROGRAMS = ivmapp

@@ -44,14 +44,14 @@ int ivm_file_format_tiff_render(ivm_file_format* format, afs_toc_file* toc_file,
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
     TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
 
-    printf( "Dimensions: %dx%d\n", w, h );
+    printf( "TIFF dimensions: %dx%d\n", w, h );
 
     npixels = w * h;
-    printf( "Size: %lu\n", npixels * sizeof(uint32) );
+    printf( "TIFF size: %lu\n", npixels * sizeof(uint32) );
     raster = (uint32*) _TIFFmalloc(npixels * sizeof (uint32));
     if (raster != NULL) {
       if (TIFFReadRGBAImage(tif, w, h, raster, 0)) {
-        printf( "Read image\n" );
+        printf( "TIFF read image successfully\n" );
 
         ivm64_new_frame( w, h, 0 );
 

@@ -21,6 +21,7 @@
 //  PROJECT INCLUDES
 //
 #include "fish_n_chips-x12.h"
+#include "fish_n_chips-x100.h"
 #include "ivm_io.h"
 
 #include <tiffio.h>
@@ -120,7 +121,7 @@ void tiff_unmap(thandle_t st, tdata_t data, toff_t off)
 //---------------------------------------------------------------------------- 
 /*! \ingroup unboxtests
  * 
- *  Unboxing sample application.
+ *  TIFF test application.
  *
  */
 
@@ -128,10 +129,17 @@ int main(int argc, char *argv[])
 {
   printf( "LIBTIFF version: %d\n", TIFFLIB_VERSION );
 
+  int dimension = 12;
+  
   // Sample file
   tiff_file file;
-  file.size = tiff_fish_n_chips_x12_tiff_len;
-  file.data = tiff_fish_n_chips_x12_tiff;
+  if (dimension == 12) {
+    file.size = tiff_fish_n_chips_x12_tiff_len;
+    file.data = tiff_fish_n_chips_x12_tiff;
+  } else if (dimension == 100) {
+    file.size = tiff_fish_n_chips_x100_tiff_len;
+    file.data = tiff_fish_n_chips_x100_tiff;    
+  }
   file.pos = 0;
   
   // Open form memory

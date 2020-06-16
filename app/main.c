@@ -67,7 +67,11 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
   toc_params.is_raw = is_raw;
 
   afs_toc_file * toc_file = afs_toc_files_get_toc(control_data->technical_metadata->afs_tocs, 0);
-
+  char * toc_file_string = afs_toc_file_save_string(toc_file, DFALSE, DFALSE);
+  printf("Table of content location:\n");
+  printf("%s\n", toc_file_string);
+  boxing_string_free(toc_file_string);
+  
   afs_toc_data* toc_data;
   int result = afs_util_unbox_toc(&toc_data, &toc_params);
   if (result != 0)
@@ -75,6 +79,10 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
     printf("toc extraction failed\n");
     return 1;
   }
+  char * toc_data_string = afs_toc_data_save_string(toc_data, DFALSE);
+  printf("Table of content:\n");
+  printf("%s\n", toc_data_string);
+  boxing_string_free(toc_data_string);
 
   // Decode all supported files
   unsigned int reel_count = afs_toc_data_reel_count(toc_data);
