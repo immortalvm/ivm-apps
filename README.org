@@ -105,7 +105,7 @@ git clone https://github.com/preservationvm/boxing.git
 git clone https://github.com/preservationvm/afs.git
 git clone https://github.com/preservationvm/tiff-v4.1.0
 wget http://www.zlib.net/zlib-1.2.11.tar.gz
-tar xJf zlib-1.2.11.gz 
+tar zxvf zlib-1.2.11.gz 
 wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf -
 
 pushd jpeg-9d
