@@ -35,6 +35,15 @@ test_zlib: test_compress
 test_compress: test_compress.c
 	ivm64-gcc -I ./zlib -o test_compress test_compress.c ./zlib/libz.so
 
+size: test_uncompress.b
+	ls -lh test_uncompress.b
+
+test_uncompress.b: test_uncompress.o
+	ivm as test_uncompress.o
+
+test_uncompress.o: test_uncompress.c Makefile
+	ivm64-gcc -I ./zlib -o test_uncompress.o test_uncompress.c ./zlib/libz.so
+
 # Build zlib (in sub-directory)
 ./zlib/zlib.so:
 	bash build-zlib.sh
