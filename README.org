@@ -38,13 +38,13 @@ Core libraries for decoding frames and assembling frames into files.
 ** Boxing
 
  - iVM repo: https://github.com/preservationvm/boxing
- - Source: libtiff-v4.1.0 from https://github.com/piql/boxing
+ - Source: https://github.com/piql/boxing
  - Compiling: CC=ivm64-gcc  CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing
 
 ** AFS
 
  - iVM repo: https://github.com/preservationvm/afs
- - Source: libtiff-v4.1.0 from https://github.com/piql/afs
+ - Source: https://github.com/piql/afs
  - Compiling: CC=ivm64-gcc CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing  LIBBOXING_DIR=<path>/ivm-apps/boxing
 
 
@@ -125,10 +125,7 @@ index 9ccf09a..dae85e6 100755
 EOF
 popd
 
-# Build - edit script to disable cross compiling
-./build-libs.sh
-
-# Build apps
-./build-apps.sh
+# Build
+./build.sh -h
 
 #+END_SRC
