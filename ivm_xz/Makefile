@@ -4,7 +4,7 @@ H_FILES=input.h uncompress.h xz.h xz_config.h xz_lzma2.h xz_private.h xz_stream.
 .PHONY: clean
 
 boot_test: boot_test.c $(H_FILES) $(C_FILES)
-	ivm64-gcc -Os -o boot_test boot_test.c $(C_FILES)
+	ivm64-gcc -Os -o boot_test boot_test.c $(C_FILES) -DXZ_DEC_SINGLE
 
 clean:
 	rm -f boot_test.b boot_test.sym
