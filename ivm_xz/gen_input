@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Generate input.h file containing the compressed input as an array
+# Usage: gen_input <input>
+
+if [ $# -lt 1 ]; then
+    echo "No input file given"
+    exit 1
+fi
+if [ ! -x /usr/bin/xz ]; then
+    echo "/usr/bin/xz not found"
+    exit 1
+fi
+if [ ! -x /usr/bin/xxd ]; then
+    echo "/usr/bin/xxd not found"
+    exit 1
+fi
+
+INPUT=$1
+shift
+
+TEMPFILE=$(mktemp "tmpXXXXXXXXXXXX")
+
+xz -c -C crc32 "$INPUT" > "$TEMPFILE"
+xxd -i "$TEMPFILE" | sed "s/$TEMPFILE/in/" > input.h
+rm -f "$TEMPFILE"

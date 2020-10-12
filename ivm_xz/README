@@ -1,0 +1,10 @@
+To build a bootloader test that decompresses an embedded file and displays it:
+
+make
+./boot_test
+
+To embed a different file:
+
+./gen_input file.txt
+
+This will compress the given file, encode it as a C array, and write it to 'input.h'.
