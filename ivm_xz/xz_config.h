@@ -10,9 +10,6 @@
 #ifndef XZ_CONFIG_H
 #define XZ_CONFIG_H
 
-/* Uncomment to enable CRC64 support. */
-/* #define XZ_USE_CRC64 */
-
 /* Uncomment as needed to enable BCJ filter decoders. */
 /* #define XZ_DEC_X86 */
 /* #define XZ_DEC_POWERPC */
@@ -21,19 +18,7 @@
 /* #define XZ_DEC_ARMTHUMB */
 /* #define XZ_DEC_SPARC */
 
-/*
- * MSVC doesn't support modern C but XZ Embedded is mostly C89
- * so these are enough.
- */
-#ifdef _MSC_VER
-typedef unsigned char bool;
-#	define true 1
-#	define false 0
-#	define inline __inline
-#else
-#	include <stdbool.h>
-#endif
-
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -62,16 +47,6 @@ typedef unsigned char bool;
  * NOTE: System headers on GNU/Linux may #define this macro already,
  * so if you want to change it, you need to #undef it first.
  */
-/*
-#ifndef __always_inline
-#	ifdef __GNUC__
-#		define __always_inline \
-			inline __attribute__((__always_inline__))
-#	else
-#		define __always_inline inline
-#	endif
-#endif
-*/
 #undef __always_inline
 #define __always_inline inline
 

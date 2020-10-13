@@ -10,45 +10,7 @@
 #ifndef XZ_PRIVATE_H
 #define XZ_PRIVATE_H
 
-#ifdef __KERNEL__
-#	include <linux/xz.h>
-#	include <linux/kernel.h>
-#	include <asm/unaligned.h>
-	/* XZ_PREBOOT may be defined only via decompress_unxz.c. */
-#	ifndef XZ_PREBOOT
-#		include <linux/slab.h>
-#		include <linux/vmalloc.h>
-#		include <linux/string.h>
-#		ifdef CONFIG_XZ_DEC_X86
-#			define XZ_DEC_X86
-#		endif
-#		ifdef CONFIG_XZ_DEC_POWERPC
-#			define XZ_DEC_POWERPC
-#		endif
-#		ifdef CONFIG_XZ_DEC_IA64
-#			define XZ_DEC_IA64
-#		endif
-#		ifdef CONFIG_XZ_DEC_ARM
-#			define XZ_DEC_ARM
-#		endif
-#		ifdef CONFIG_XZ_DEC_ARMTHUMB
-#			define XZ_DEC_ARMTHUMB
-#		endif
-#		ifdef CONFIG_XZ_DEC_SPARC
-#			define XZ_DEC_SPARC
-#		endif
-#		define memeq(a, b, size) (memcmp(a, b, size) == 0)
-#		define memzero(buf, size) memset(buf, 0, size)
-#	endif
-#	define get_le32(p) le32_to_cpup((const uint32_t *)(p))
-#else
-	/*
-	 * For userspace builds, use a separate header to define the required
-	 * macros and functions. This makes it easier to adapt the code into
-	 * different environments and avoids clutter in the Linux kernel tree.
-	 */
-#	include "xz_config.h"
-#endif
+#include "xz_config.h"
 
 /* If no specific decoding mode is requested, enable support for all modes. */
 #if !defined(XZ_DEC_SINGLE) && !defined(XZ_DEC_PREALLOC) \
