@@ -4,7 +4,7 @@
 #include <jpeglib.h>
 #include "ivm_io/ivm_io.h"
 #include "ivm_formats/ivm_formats.h"
-#include "tocfile.h"
+#include "afs/tocfile.h"
 
 
 static const char* jpeg_color_space_name( J_COLOR_SPACE cs )

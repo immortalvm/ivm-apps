@@ -20,8 +20,8 @@ extern "C" {
 #endif
 
 #include "boxing/unboxer_utility.h"
-#include "controldata.h"
-#include "tocdata_c.h"
+#include "afs/controldata.h"
+#include "afs/tocdata_c.h"
 
 // TYPEDEFS
 // 

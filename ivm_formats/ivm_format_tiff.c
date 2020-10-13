@@ -3,7 +3,7 @@
 #include <tiffio.h>
 #include "ivm_io/ivm_io.h"
 #include "ivm_formats/ivm_formats.h"
-#include "tocfile.h"
+#include "afs/tocfile.h"
 
 typedef struct {
   unsigned int    size;

@@ -56,7 +56,7 @@ echo "BUILDING: ${BUILD[*]}"
 if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
     for ((i=0; i<${#TARGETS[*]}; i++)) do 
 
-        BUILDROOT=$PWD/build/${TARGETS[$i]}
+        BUILDROOT=$ROOT/build/${TARGETS[$i]}
         COMPILER=${COMPILERS[$i]}
         HOST=${HOSTS[$i]}
         
@@ -65,41 +65,49 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         mkdir -p $BUILDROOT
         
         pushd $BUILDROOT
-        mkdir boxing
+
+        echo "===== BOXING ====="
+        [ ! -d "./boxing" ] && mkdir boxing
         pushd boxing
-        CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../boxing/configure $HOST --prefix=$BUILDROOT/boxing
-        make && make install  || { popd ; exit 1; }
+        [ ! -f "$ROOT/../boxing/configure" ] && { (echo "Running BOXING configure"; cd $ROOT/../boxing ; ./autogen.sh) || { popd; exit 1; } }
+        [ ! -f "./Makefile" ] && CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../boxing/configure $HOST --prefix=$BUILDROOT/boxing
+        (make && make install) || { popd ; exit 1; }
         popd
         
-        mkdir afs
+        echo "===== AFS ====="
+        [ ! -d "./afs" ] && mkdir afs
         pushd afs
-        CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../afs/configure $HOST --prefix=$BUILDROOT/boxing LIBBOXING_DIR=$BUILDROOT/boxing
-        make && make install  || { popd ; exit 1; }
+        [ ! -f "$ROOT/../afs/configure" ] && { (echo "Running AFS configure"; cd $ROOT/../afs ; ./autogen.sh) || { popd; exit 1; } }
+        [ ! -f "./Makefile" ] && { CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../afs/configure $HOST --prefix=$BUILDROOT/afs LIBBOXING_DIR=$BUILDROOT/boxing; }
+        (make && make install)  || { popd ; exit 1; }
         popd
         
-        mkdir zlib-1.2.11
+        echo "===== ZLIB ====="
+        [ ! -d zlib-1.2.11 ] && mkdir zlib-1.2.11
         pushd zlib-1.2.11 
-        CC=$COMPILER $ROOT/../zlib-1.2.11/configure --static --prefix=$BUILDROOT/file-format-decoders
+        [ ! -f "./Makefile" ] && { CC=$COMPILER $ROOT/../zlib-1.2.11/configure --static --prefix=$BUILDROOT/file-format-decoders; }
         make && make install || { popd ; exit 1; }
         popd
 
-        mkdir jpeg-9d
+        echo "===== JPEG ====="
+        [ ! -d jpeg-9d ] && mkdir jpeg-9d
         pushd jpeg-9d 
-        CC=$COMPILER $ROOT/../jpeg-9d/configure --enable-shared=no --enable-static=yes $HOST --prefix=$BUILDROOT/file-format-decoders
-        make && make install  || { popd ; exit 1; }
+        [ ! -f "./Makefile" ] && { CC=$COMPILER $ROOT/../jpeg-9d/configure --enable-shared=no --enable-static=yes $HOST --prefix=$BUILDROOT/file-format-decoders; }
+        make && make install || { popd ; exit 1; }
         popd
         
-        mkdir tiff-4.1.0
+        echo "===== TIFF ====="
+        [ ! -d "./tiff-4.1.0" ] && mkdir tiff-4.1.0
         pushd tiff-4.1.0
-        CC=$COMPILER $ROOT/../tiff-4.1.0/configure \
+        [ ! -f "./Makefile" ] && { CC=$COMPILER $ROOT/../tiff-4.1.0/configure \
           $HOST --prefix=$BUILDROOT/file-format-decoders \
           --enable-shared=no \
           --with-zlib-include-dir=$BUILDROOT/file-format-decoders/include \
           --with-zlib-lib-dir=$BUILDROOT/file-format-decoders/lib \
           --with-jpeg-include-dir=$BUILDROOT/file-format-decoders/include \
-          --with-jpeg-lib-dir=$BUILDROOT/file-format-decoders/lib
+          --with-jpeg-lib-dir=$BUILDROOT/file-format-decoders/lib; }
         
-        make && make install || exit
+        (make && make install) || { popd ; exit 1; }
         popd
         
         popd
@@ -111,11 +119,16 @@ if [ "$BUILD" == "app" ] || [ "$BUILD" == "all" ]; then
     
     for ((i=0; i<${#TARGETS[*]}; i++)) do 
 
-        BUILDROOT=$PWD/build/${TARGETS[$i]}
+        BUILDROOT=$ROOT/build/${TARGETS[$i]}
         COMPILER=${COMPILERS[$i]}
+        HOST=${HOSTS[$i]}
 
-        pushd $BUILDROOT
-        CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/configure --host ivm64 LIBBOXING_DIR=$BUILDROOT/boxing/lib
+        [[ ! -d $BUILDROOT ]] && mkdir -p $BUILDROOT
+        [ ! -f "$ROOT/configure" ] && { pushd $ROOT; ./autogen.sh ; popd; }
+
+        echo "Building in $BUILDROOT"
+        pushd $BUILDROOT || { echo "ERROR: $BUILDROOT does not exist"; exit 1; } 
+        [ ! -f "./Makefile" ] && { CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/configure $HOST LIBBOXING_DIR=$BUILDROOT/boxing/lib LIBAFS_DIR=$BUILDROOT/afs/lib; }
         make 
         popd
         

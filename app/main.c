@@ -1,7 +1,7 @@
 #include "ivm_io/ivm_io.h"
-#include "afs/afsutil.h"
 #include "boxing/image8.h"
-#include "tocfile.h"
+#include "afs/afsutil.h"
+#include "afs/tocfile.h"
 #include "ivm_formats/ivm_formats.h"
 
 #define LOGGING_ENABLED 1

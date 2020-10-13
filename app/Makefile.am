@@ -7,12 +7,14 @@ ivmapp_CFLAGS = \
      $(AM_CFLAGS) \
      -I${top_srcdir} \
      -I${top_srcdir}/afs \
-     -I${top_srcdir}/boxing/inc \
-     -I${top_srcdir}/boxing/thirdparty/glib \
-     -I${top_srcdir}/boxing/thirdparty/minixml/inc \
+     -I${abs_top_builddir}/afs/include \
+     -I${abs_top_builddir}/boxing/include \
+     -I${abs_top_builddir}/boxing/thirdparty/glib \
+     -I${abs_top_builddir}/boxing/thirdparty/minixml/inc \
      -I../file-format-decoders/include \
      -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
-     -L$(LIBBOXING_DIR) 
+     -L$(LIBBOXING_DIR) \
+     -L$(LIBAFS_DIR)
 ivmapp_LDADD = \
      -lunboxing \
      -lafs \

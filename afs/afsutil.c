@@ -18,10 +18,9 @@
 #include "boxing/unboxer_utility.h"
 #include "boxing/platform/memory.h"
 #include "boxing/utils.h"
-#include "controldata.h"
 #include "config_source_4k_controlframe_v7.h"
 #include "gvector.h"
-#include "sha1hash.h"
+#include "afs/sha1hash.h"
 
 //  DEFINES
 //

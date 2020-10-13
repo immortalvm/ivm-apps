@@ -51,6 +51,7 @@ AC_CHECK_FUNCS([floor memmove memset pow sqrt strcasecmp strchr strtol strtoull]
 
 # Checks for command line options
 AC_ARG_VAR(LIBBOXING_DIR, path to boxing lib)
+AC_ARG_VAR(LIBAFS_DIR, path to afs lib)
 AM_CONDITIONAL([IVM_COMPILE], [test "x$CC" = "xivm64-gcc"])
 AC_CONFIG_FILES([
     Makefile
