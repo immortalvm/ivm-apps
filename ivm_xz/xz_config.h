@@ -19,15 +19,19 @@
 /* #define XZ_DEC_SPARC */
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "trivlib.h"
 
 #include "xz.h"
 
-#define kmalloc(size, flags) malloc(size)
-#define kfree(ptr) free(ptr)
-#define vmalloc(size) malloc(size)
-#define vfree(ptr) free(ptr)
+#define kmalloc(size, flags) trivial_malloc(size)
+#define kfree(ptr) trivial_free(ptr)
+#define vmalloc(size) trivial_malloc(size)
+#define vfree(ptr) trivial_free(ptr)
+
+#define memcmp(m1, m2, n) trivial_memcmp(m1, m2, n)
+#define memcpy(dst, src, len) trivial_memcpy(dst, src, len)
+#define memmove(dst, src, len) trivial_memmove(dst, src, len)
+#define memset(m, c, n) trivial_memset(m, c, n)
 
 #define memeq(a, b, size) (memcmp(a, b, size) == 0)
 #define memzero(buf, size) memset(buf, 0, size)
