@@ -10,11 +10,7 @@
 #include "xz_private.h"
 #include "xz_stream.h"
 
-#ifdef XZ_USE_CRC64
-#	define IS_CRC64(check_type) ((check_type) == XZ_CHECK_CRC64)
-#else
-#	define IS_CRC64(check_type) false
-#endif
+#define IS_CRC64(check_type) false
 
 /* Hash used to validate the Index field */
 struct xz_dec_hash {
@@ -48,13 +44,8 @@ struct xz_dec {
 	size_t in_start;
 	size_t out_start;
 
-#ifdef XZ_USE_CRC64
-	/* CRC32 or CRC64 value in Block or CRC32 value in Index */
-	uint64_t crc;
-#else
 	/* CRC32 value in Block or Index */
 	uint32_t crc;
-#endif
 
 	/* Type of the integrity check calculated from uncompressed data */
 	enum xz_check check_type;
@@ -255,11 +246,6 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 	if (s->check_type == XZ_CHECK_CRC32)
 		s->crc = xz_crc32(b->out + s->out_start,
 				b->out_pos - s->out_start, s->crc);
-#ifdef XZ_USE_CRC64
-	else if (s->check_type == XZ_CHECK_CRC64)
-		s->crc = xz_crc64(b->out + s->out_start,
-				b->out_pos - s->out_start, s->crc);
-#endif
 
 	if (ret == XZ_STREAM_END) {
 		if (s->block_header.compressed != VLI_UNKNOWN

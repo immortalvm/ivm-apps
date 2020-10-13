@@ -10,9 +10,6 @@
 #ifndef XZ_CONFIG_H
 #define XZ_CONFIG_H
 
-/* Uncomment to enable CRC64 support. */
-/* #define XZ_USE_CRC64 */
-
 /* Uncomment as needed to enable BCJ filter decoders. */
 /* #define XZ_DEC_X86 */
 /* #define XZ_DEC_POWERPC */
@@ -21,31 +18,25 @@
 /* #define XZ_DEC_ARMTHUMB */
 /* #define XZ_DEC_SPARC */
 
-/*
- * MSVC doesn't support modern C but XZ Embedded is mostly C89
- * so these are enough.
- */
-#ifdef _MSC_VER
-typedef unsigned char bool;
-#	define true 1
-#	define false 0
-#	define inline __inline
-#else
-#	include <stdbool.h>
-#endif
-
-#include <stdlib.h>
-#include <string.h>
-
+#include <stdbool.h>
+#include "trivlib.h"
 #include "xz.h"
+
+/* Rewire C library calls to trivial functions */
+#define malloc(size) trivial_malloc(size)
+#define free(ptr) trivial_free(ptr)
+#define memcmp(m1, m2, n) trivial_memcmp(m1, m2, n)
+#define memcpy(dst, src, len) trivial_memcpy(dst, src, len)
+#define memmove(dst, src, len) trivial_memmove(dst, src, len)
+#define memset(m, c, n) trivial_memset(m, c, n)
+
+#define memeq(a, b, size) (memcmp(a, b, size) == 0)
+#define memzero(buf, size) memset(buf, 0, size)
 
 #define kmalloc(size, flags) malloc(size)
 #define kfree(ptr) free(ptr)
 #define vmalloc(size) malloc(size)
 #define vfree(ptr) free(ptr)
-
-#define memeq(a, b, size) (memcmp(a, b, size) == 0)
-#define memzero(buf, size) memset(buf, 0, size)
 
 #ifndef min
 #	define min(x, y) ((x) < (y) ? (x) : (y))
@@ -62,14 +53,8 @@ typedef unsigned char bool;
  * NOTE: System headers on GNU/Linux may #define this macro already,
  * so if you want to change it, you need to #undef it first.
  */
-#ifndef __always_inline
-#	ifdef __GNUC__
-#		define __always_inline \
-			inline __attribute__((__always_inline__))
-#	else
-#		define __always_inline inline
-#	endif
-#endif
+#undef __always_inline
+#define __always_inline inline
 
 /* Inline functions to access unaligned unsigned 32-bit integers */
 #ifndef get_unaligned_le32
