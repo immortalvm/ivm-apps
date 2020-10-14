@@ -3,6 +3,7 @@
 #include "afs/afsutil.h"
 #include "afs/tocfile.h"
 #include "ivm_formats/ivm_formats.h"
+#include <stdio.h>
 
 #define LOGGING_ENABLED 1
 
