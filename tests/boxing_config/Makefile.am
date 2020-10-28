@@ -3,8 +3,7 @@ noinst_PROGRAMS = boxing_config
 
 boxing_config_CFLAGS = \
      $(AM_CFLAGS) \
-     -I${top_srcdir}/boxing/inc \
-     -I${top_srcdir}/boxing/thirdparty/glib \
+     -I${top_builddir}/boxing/include \
      -I${top_srcdir}/afs \
      -Xlinker -mdce 
 

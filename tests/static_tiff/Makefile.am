@@ -7,7 +7,7 @@ static_tiff_CFLAGS = \
      -I../../file-format-decoders/include \
      -L../../file-format-decoders/lib \
      -I${top_srcdir}/ivm_io \
-     -I${top_srcdir}/../testdata/tiff
+     -I$(LIBTESTDATA_DIR)/tiff
 static_tiff_LDADD = \
      -lm -ltiff -lz -ljpeg
 static_tiff_SOURCES = \

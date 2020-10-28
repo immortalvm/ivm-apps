@@ -5,7 +5,7 @@ read
 pushd ..
 wget http://www.zlib.net/zlib-1.2.11.tar.gz || (popd;exit 1)
 tar zxvf zlib-1.2.11.tar.gz  || (popd; exit 1)
-wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - | (popd;exit 1)
+wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || (popd;exit 1)
 git clone https://github.com/preservationvm/testdata.git || (popd;exit 1)
 git clone https://github.com/preservationvm/boxing.git || (popd;exit 1)
 git clone https://github.com/preservationvm/afs.git || (popd;exit 1)
@@ -28,6 +28,10 @@ index 9ccf09a..dae85e6 100755
 EOF
 
 patch -p1 < ivm64.patch || (popd;popd;exit 1)
+popd
+
+pushd testdata
+./create-testdata.sh || { popd; exit 1; }
 popd
 
 popd

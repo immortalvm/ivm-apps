@@ -1,4 +1,3 @@
-// Compile: ivm64-gcc main.c -I ../../file-format-decoders/include/
 /*****************************************************************************
 **
 **  Decode and render a TIFF stored in a C array

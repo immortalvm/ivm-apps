@@ -1,10 +1,10 @@
 #include "ivm_io.h"
 
+#include <stdio.h>
 #ifdef __ivm64__
 #include <assert.h>
 static_assert(sizeof(long) == 8, "8 bytes in a long");
 #else
-#include <stdio.h>
 #include <png.h>
 #include <dirent.h>
 #include <stdint.h>
