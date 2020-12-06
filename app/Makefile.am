@@ -10,6 +10,7 @@ libivmapp_a_CFLAGS = \
      -I${abs_top_builddir}/boxing/thirdparty/glib \
      -I${abs_top_builddir}/boxing/thirdparty/minixml/inc \
      -I../file-format-decoders/include \
+     -I${top_srcdir}/boot \
      -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
      -L$(LIBBOXING_DIR) \
      -L$(LIBAFS_DIR)
