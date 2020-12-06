@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   // Decompress rest of application
   printf("starting ivm-app\n");
 
-  // Code below here should be compressed...
+  // TODO: Code below here should be compressed...
   
   // Assume for now all images are raw
   DBOOL is_raw = DTRUE;
