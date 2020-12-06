@@ -1,9 +1,7 @@
 
-noinst_PROGRAMS = ivmapp
+lib_LIBRARIES = libivmapp.a
 
-#     -Xlinker -mdce 
-
-ivmapp_CFLAGS = \
+libivmapp_a_CFLAGS = \
      $(AM_CFLAGS) \
      -I${top_srcdir} \
      -I${top_srcdir}/afs \
@@ -15,24 +13,13 @@ ivmapp_CFLAGS = \
      -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
      -L$(LIBBOXING_DIR) \
      -L$(LIBAFS_DIR)
-ivmapp_LDADD = \
-     -lunboxing \
-     -lafs \
-     -lm -ltiff -ljpeg -lz
 
-if ! IVM_COMPILE
-ivmapp_LDADD += \
-     -lpng
-endif
-
-ivmapp_SOURCES = \
-     main.c \
-     ../afs/afsutil.c \
-     ../ivm_io/ivm_io.c \
+libivmapp_a_SOURCES = \
+     app.c \
+     app.h \
      ../ivm_formats/ivm_format_tiff.c \
      ../ivm_formats/ivm_format_zlib.c \
      ../ivm_formats/ivm_format_jpeg.c \
      ../ivm_formats/ivm_formats.c
 
-check_PROGRAMS = ivmapp
 

@@ -4,6 +4,7 @@
 #include "ivm_format_tiff.h"
 #include "ivm_format_zlib.h"
 
+#include <string.h>
 
 static ivm_file_format ivm_file_formats[] =
 {

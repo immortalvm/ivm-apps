@@ -1,4 +1,3 @@
-// Compile: ivm64-gcc main.c -I ../../file-format-decoders/include/
 /*****************************************************************************
 **
 **  Test the boxing_config

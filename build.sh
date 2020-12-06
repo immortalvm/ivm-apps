@@ -9,10 +9,11 @@ declare -a COMPILERS
 CLEAN=0
 TARGET="ivm"
 BUILD="app"
+FIXMATH=""
 
 help() {
     echo "Build iVM libraries"
-    echo "$0 [-t|--target <lnx|ivm|all>] [-b|--build <lib|app|all>] [-c|--clean] [-h|--help]" 
+    echo "$0 [-t|--target <lnx|ivm|all>] [-b|--build <lib|app|all>] [-c|--clean] [-f|--fixmath] [-h|--help]" 
 }
 
 
@@ -21,6 +22,7 @@ while [[ "$#" -gt 0 ]]; do
         -b|--build) BUILD="$2"; shift ;;
         -t|--target) TARGET="$2"; shift ;;
         -c|--clean) CLEAN=1 ;;
+        -f|--fixmath) FIXMATH="--with-fixmath32" ;;
         -h|--help) help; exit 0 ;;
         *) echo "Unknown parameter passed: $1"; help; exit 1 ;;
     esac
@@ -65,12 +67,32 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         mkdir -p $BUILDROOT
         
         pushd $BUILDROOT
+
+        if [ "$FIXMATH" != "" ] ; then
+            echo "===== LIBFIXMATH64 ====="
+            [ ! -d "./libfixmath64" ] && mkdir libfixmath64
+            pushd libfixmath64
+            [ ! -f "$ROOT/../libfixmath64/configure" ] && { (echo "Running LIBFIXMATH configure"; cd $ROOT/../libfixmath64 ; ./autogen.sh) || { popd; exit 1; } }
+            [ ! -f "./Makefile" ] && {
+                CC=$COMPILER $ROOT/../libfixmath64/configure \
+                  $HOST \
+                  --prefix=$BUILDROOT/libfixmath64; }
+            { make && make install; } || { popd ; exit 1; }
+            popd
+        fi
         
         echo "===== BOXING ====="
         [ ! -d "./boxing" ] && mkdir boxing
         pushd boxing
         [ ! -f "$ROOT/../boxing/configure" ] && { (echo "Running BOXING configure"; cd $ROOT/../boxing ; ./autogen.sh) || { popd; exit 1; } }
-        [ ! -f "./Makefile" ] && CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../boxing/configure $HOST --prefix=$BUILDROOT/boxing
+        [ ! -f "./Makefile" ] && {
+            CC=$COMPILER \
+              CFLAGS="-DBOXING_USE_C99_LIBRARIES" \
+              LIBMATHFIX_DIR=$BUILDROOT/libfixmath64 \
+              $ROOT/../boxing/configure \
+              $HOST \
+              $FIXMATH \
+              --prefix=$BUILDROOT/boxing; }
         { make && make install; } || { popd ; exit 1; }
         popd
         
@@ -78,7 +100,12 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         [ ! -d "./afs" ] && mkdir afs
         pushd afs
         [ ! -f "$ROOT/../afs/configure" ] && { (echo "Running AFS configure"; cd $ROOT/../afs ; ./autogen.sh) || { popd; exit 1; } }
-        [ ! -f "./Makefile" ] && { CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/../afs/configure $HOST --prefix=$BUILDROOT/afs LIBBOXING_DIR=$BUILDROOT/boxing; }
+        [ ! -f "./Makefile" ] && {
+            CC=$COMPILER \
+              CFLAGS="-DBOXING_USE_C99_LIBRARIES" \
+              $ROOT/../afs/configure \
+              $HOST --prefix=$BUILDROOT/afs \
+              LIBBOXING_DIR=$BUILDROOT/boxing; }
         { make && make install; }  || { popd ; exit 1; }
         popd
         
@@ -130,7 +157,13 @@ if [ "$BUILD" == "app" ] || [ "$BUILD" == "all" ]; then
 
         echo "Building in $BUILDROOT"
         pushd $BUILDROOT || { echo "ERROR: $BUILDROOT does not exist"; exit 1; } 
-        [ ! -f "./Makefile" ] && { CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" $ROOT/configure $HOST LIBBOXING_DIR=$BUILDROOT/boxing/lib LIBAFS_DIR=$BUILDROOT/afs/lib LIBTESTDATA_DIR=$ROOT/../testdata   ; }
+        [ ! -f "./Makefile" ] && {
+            CC=$COMPILER CFLAGS="-DBOXING_USE_C99_LIBRARIES" \
+              LIBBOXING_DIR=$BUILDROOT/boxing/lib \
+              LIBAFS_DIR=$BUILDROOT/afs/lib \
+              LIBTESTDATA_DIR=$ROOT/../testdata \
+              $ROOT/configure $HOST
+        }
         make 
         popd
         

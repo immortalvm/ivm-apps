@@ -1,6 +1,6 @@
 AM_CFLAGS = $(all_includes)
 
-SUBDIRS = app tests/static_tiff tests/boxing_config
+SUBDIRS = app boot tests/static_tiff tests/boxing_config
 
 EXTRA_DIST = README.org doc autogen.sh app/fix_and_run.sh
 

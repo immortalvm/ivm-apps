@@ -19,7 +19,7 @@ AM_INIT_AUTOMAKE([
 AC_COPYRIGHT([Copyright (C) 2020 Piql AS])
 
 # Check that we are in the correct dir
-AC_CONFIG_SRCDIR([app/main.c])
+AC_CONFIG_SRCDIR([boot/main.c])
 
 # Checks for programs.
 AC_PROG_CC
@@ -57,6 +57,7 @@ AM_CONDITIONAL([IVM_COMPILE], [test "x$CC" = "xivm64-gcc"])
 AC_CONFIG_FILES([
     Makefile
     app/Makefile
+    boot/Makefile
     tests/static_tiff/Makefile
     tests/boxing_config/Makefile])
 AC_OUTPUT
