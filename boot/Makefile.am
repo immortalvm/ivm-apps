@@ -17,9 +17,9 @@ ivmboot_CFLAGS = \
      -L../app
 
 ivmboot_LDADD = \
+     -livmapp \
      -lunboxing \
      -lafs \
-     -livmapp \
      -ltiff \
      -ljpeg \
      -lz \
