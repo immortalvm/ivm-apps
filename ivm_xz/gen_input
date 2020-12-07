@@ -20,7 +20,9 @@ INPUT=$1
 shift
 
 TEMPFILE=$(mktemp "tmpXXXXXXXXXXXX")
+SIZE=$(ls -l "$INPUT" | cut -d' ' -f5)
 
+echo "uint8_t output[$SIZE];" > output.h
 xz -c -C crc32 "$INPUT" > "$TEMPFILE"
-xxd -i "$TEMPFILE" | sed "s/$TEMPFILE/in/" > input.h
+xxd -i "$TEMPFILE" | sed "s/$TEMPFILE/input/" > input.h
 rm -f "$TEMPFILE"

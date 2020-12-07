@@ -1,23 +1,14 @@
 #include "uncompress.h"
 #include "input.h"
+#include "output.h"
 
-#define BUFFER_SIZE (1024 * 1024)
-
-void ivm64_put_character(long character)
-{
-  asm volatile("put_char* [(load8 %[c])]" : : [c] "m" (character));
+void do_uncompress(void) {
+  /* Read compressed file from input and write it to output */
+  uncompress(input, input_len, output, sizeof(output));
 }
 
 int main(void)
 {
-  uint8_t out[BUFFER_SIZE];
-  int position;
-
-  position = uncompress(in, in_len, out, sizeof(out));
-  if (position) {
-    for (int i = 0; i < position; i++) {
-      ivm64_put_character((long) out[i]);
-    }
-  }
+  do_uncompress();
   return 0;
 }
