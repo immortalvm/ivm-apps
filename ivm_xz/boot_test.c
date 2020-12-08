@@ -1,16 +1,23 @@
 #include "uncompress.h"
 #include "input.h"
+#include "output.h"
 
-#define BUF_SIZE (8 * 1024 * 1024)
+/* Define DEBUG if run standalone. */
+#ifdef DEBUG
+#include <stdlib.h>
+#endif
 
-uint8_t output[BUF_SIZE];
+uint8_t *output;
 
 int do_uncompress(void) {
   /* Read compressed file from input and write it to output */
-  return uncompress(input, input_len, output, BUF_SIZE);
+  return uncompress(input, input_len, output, decompressed_size);
 }
 
 int main(void)
 {
+#ifdef DEBUG
+  output = malloc(decompressed_size + 1);
+#endif
   return do_uncompress();
 }
