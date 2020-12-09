@@ -1,6 +1,5 @@
 #include "uncompress.h"
 #include "input.h"
-#include "output.h"
 
 /* Define DEBUG if run standalone. */
 #ifdef DEBUG

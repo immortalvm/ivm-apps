@@ -1,11 +1,8 @@
-To build a bootloader test that decompresses an embedded file:
+To build a bootable image that decompresses an executable file and executes
+it, issue
 
-make
-./self_extract
+  make
 
-To embed a different file:
+The resulting bootable image is in mix.b.
 
-./gen_input file
-
-This will compress the given file, encode it as a C array, and write the
-files input.h and output.h, which are included in self_extract.c.
+A different file can be embedded by setting the TARGET variable in Makefile.

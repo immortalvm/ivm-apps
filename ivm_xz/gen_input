@@ -22,7 +22,7 @@ shift
 TEMPFILE=$(mktemp "tmpXXXXXXXXXXXX")
 SIZE=$(ls -l "$INPUT" | cut -d' ' -f5)
 
-echo "int decompressed_size = $SIZE;" > output.h
 xz -c -C crc32 "$INPUT" > "$TEMPFILE"
 xxd -i "$TEMPFILE" | sed "s/$TEMPFILE/input/" > input.h
 rm -f "$TEMPFILE"
+echo "int decompressed_size = $SIZE;" >> input.h
