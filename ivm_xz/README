@@ -1,11 +1,11 @@
 To build a bootloader test that decompresses an embedded file:
 
 make
-./boot_test
+./self_extract
 
 To embed a different file:
 
 ./gen_input file
 
 This will compress the given file, encode it as a C array, and write the
-files input.h and output.h, which are included in boot_test.c.
+files input.h and output.h, which are included in self_extract.c.

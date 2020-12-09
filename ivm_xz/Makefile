@@ -3,11 +3,11 @@ H_FILES=input.h trivlib.h uncompress.h xz.h xz_config.h xz_lzma2.h xz_private.h 
 
 .PHONY: clean
 
-boot_test: boot_test.c $(H_FILES) $(C_FILES)
-	ivm64-gcc -Os -o boot_test boot_test.c $(C_FILES) -DXZ_DEC_SINGLE
+self_extract: self_extract.c $(H_FILES) $(C_FILES)
+	ivm64-gcc -Os -o self_extract self_extract.c $(C_FILES) -DXZ_DEC_SINGLE
 
 clean:
-	rm -f boot_test.b boot_test.sym
+	rm -f self_extract.b self_extract.sym
 
 distclean: clean
-	rm -f boot_test
+	rm -f self_extract
