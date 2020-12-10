@@ -1,6 +1,6 @@
-#include "uncompress.h"
+#include "decompress.h"
 
-int uncompress(char *in_buf, int in_buf_size, char *out_buf, int out_buf_size) {
+int decompress(char *in_buf, int in_buf_size, char *out_buf, int out_buf_size) {
   struct xz_buf b;
   struct xz_dec *s;
 
