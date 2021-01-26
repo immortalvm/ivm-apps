@@ -1,5 +1,7 @@
 # The executable to embed
-TARGET = ivmboot.b
+
+# TARGET = ivmboot.b
+TARGET?=../build/ivm/boot/ivmboot.b
 
 C_FILES=trivlib.c decompress.c xz_crc32.c xz_dec_lzma2.c xz_dec_stream.c
 H_FILES=input.h trivlib.h decompress.h xz.h xz_config.h xz_lzma2.h xz_private.h xz_stream.h
@@ -22,3 +24,6 @@ clean:
 
 distclean: clean
 	rm -f mix.b
+
+test: mix.b
+	vm mix.b -o out -i $(TESTDATA_DIR)/reel/png/ -m 1073741824

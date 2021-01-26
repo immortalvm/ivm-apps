@@ -18,8 +18,8 @@ ivmboot_CFLAGS = \
 
 ivmboot_LDADD = \
      -livmapp \
-     -lunboxing \
      -lafs \
+     -lunboxing \
      -ltiff \
      -ljpeg \
      -lz \
@@ -39,3 +39,12 @@ ivmboot_SOURCES = \
      ../ivm_io/ivm_io.c
 
 check_PROGRAMS = ivmboot
+
+asm: ivmboot
+	ivm as  --noopt --bin "ivmboot.b" --sym "ivmboot.sym" ivmboot
+
+test: ivmboot
+	vm ivmboot.b -o out -i $(TESTDATA_DIR)/reel/png/ -m 1073741824
+
+
+.PHONY: test asm
