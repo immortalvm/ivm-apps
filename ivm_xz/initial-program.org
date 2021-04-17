@@ -1,0 +1,68 @@
+* The initial program
+
+Most of the code that is executed by the virtual machine is read from film
+frames via the image input device.  To start the process of reading the
+film frames, an initial program must be in place, that is, it must entered
+into the machine memory via other means.  It consists of the following
+parts:
+- Self-extracting binary.
+  This program consists of two parts:
+  - An embedded minimal version of the boxing library binary, compressed
+    with the XZ algorithm.
+  - A specially adapted version of the XZ Embedded decompression library.
+- Loader: This program controls the decompression process and manages
+  machine parameters.
+
+** The startup process
+
+The startup process consists of the following steps:
+1. The loader is executed.
+2. The loader saves the machine parameters.
+3. The loader transfers control to the self-extracting binary.
+4. The self extracting binary decompresses the embedded minimal boxing
+   library into a buffer and returns control to the loader.
+5. The loader copies the decompressed minimal boxing library to the start
+   of memory.
+6. The loader restores the machine arguments in the correct location.
+7. The loader transfers control to the minimal boxing library.
+8. The minimal boxing library reads the full boxing library from the film
+   into memory.
+9. The minimal boxing library transfers control to the full boxing library.
+
+** Self-extracting binary
+
+The self-extracting binary is implemented in C.  It consists of a specially
+adapted version of the XZ Embedded library, which is intended for use in
+embedded systems where small code size is important.  All libc calls have
+been replaced with as trivial equivalents as possible, to further reduce
+the size of the compiled code.  For example, the trivial malloc call simply
+allocates memory linearly, and the trivial free call does nothing.
+
+The compressed minimal boxing library binary is encoded as a static array.
+When the self-extracting binary is started, it decompresses the minimal
+boxing library into memory from a pointer variable called output and
+returns.
+
+** Loader
+
+The loader is implemented in iVM assembly language.  It saves the machine
+parameters, sets the output pointer, and transfers control to the
+self-extracting binary.  When the decompression process has finished, the
+loader copies the decompressed minimal boxing library to the start of
+memory, and it also copies the machine parameters to the correct location.
+Finally it transfers control to the minimal boxing library.
+
+The assembler is run on both the loader and the self-extracting binary to
+produce the initial program.
+
+** Boxing library
+
+The boxing library is written in C.  The full version reads content from
+the film via the image input device and decodes it depending on the
+datatype and the machine parameters.
+
+Most of the decoding functionality in the boxing library can be disabled by
+setting a conditional define.  This allows a minimal boxing library to be
+compiled.  When this is executed from the initial program, as described
+above, it loads the full boxing library from the film and transfers control
+to it.
