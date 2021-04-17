@@ -69,28 +69,6 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
  - iVM repo: https://github.com/preservationvm/tiff-v4.1.0
  - Source: libtiff-v4.1.0 from https://download.osgeo.org/libtiff
 
-** PDF
-CC=ivm64-gcc cmake \
- -DBUILD_GTK_TESTS=OFF \
- -DBUILD_QT5_TESTS=OFF\
- -DBUILD_CPP_TESTS=OFF\
- -DENABLE_SPLASH=OFF\
- -DENABLE_UTILS=OFF\
- -DENABLE_CPP=OFF\
- -DENABLE_GLIB=OFF\
- -DENABLE_GOBJECT_INTROSPECTION=OFF\
- -DENABLE_GTK_DOC=OFF\
- -DENABLE_QT5=OFF\
- -DENABLE_LIBOPENJPEG=none\
- -DENABLE_CMS=none\
- -DENABLE_DCTDECODER=none\
- -DENABLE_LIBCURL=OFF\
- -DENABLE_ZLIB=OFF\
- -DENABLE_ZLIB_UNCOMPRESS=OFF\
- -DBUILD_SHARED_LIBS=OFF\
- -DRUN_GPERF_IF_PRESENT=OFF\
- ..  
-
 * iVM IO
 
 Utility library for interfacing the iVM I/O devices.
