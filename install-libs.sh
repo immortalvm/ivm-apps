@@ -6,11 +6,12 @@ pushd ..
 wget http://www.zlib.net/zlib-1.2.11.tar.gz || (popd;exit 1)
 tar zxvf zlib-1.2.11.tar.gz  || (popd; exit 1)
 wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || (popd;exit 1)
-git clone https://github.com/preservationvm/testdata.git || (popd;exit 1)
-git clone https://github.com/preservationvm/boxing.git || (popd;exit 1)
-git clone https://github.com/preservationvm/afs.git || (popd;exit 1)
-git clone https://github.com/preservationvm/tiff-4.1.0 || (popd;exit 1)
- 
+git clone https://github.com/immortalvm/testdata.git || (popd;exit 1)
+git clone https://github.com/immortalvm/boxing.git || (popd;exit 1)
+git clone https://github.com/immortalvm/afs.git || (popd;exit 1)
+git clone https://github.com/immortalvm/tiff-4.1.0 || (popd;exit 1)
+git clone https://github.com/immortalvm/ivm-ghostscript || (popd;exit 1)
+
 pushd jpeg-9d
 cat << EOF > ivm64.patch
 diff --git a/config.sub b/config.sub

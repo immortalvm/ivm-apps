@@ -4,7 +4,6 @@
 #include "ivm_formats/ivm_formats.h"
 #include <stdio.h>
 
-#include "settings.h"
 #include "inputdevice.h"
 
 static ivm_file_format* get_ivm_format(afs_toc_file* file);
@@ -70,10 +69,12 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
         
         // Unbox file
         int result = afs_util_unbox_file(toc_file, &file_params, data);
+        printf("unbox file result=%d\n", result);
         
         // Render file
         if (result == BOXING_UNBOXER_OK)
         {
+          printf("rendering %s\n", toc_file->name);
           ivm_format->render(ivm_format, toc_file, data);
         }
 
@@ -81,7 +82,8 @@ int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
       }
     }
   }
-
+  afs_toc_data_free(toc_data);
+    
   return 0;
 }
 

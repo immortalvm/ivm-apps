@@ -37,6 +37,7 @@ elif [ "$TARGET" == "ivm" ] ; then
     TARGETS=(ivm)
     COMPILERS=(ivm64-gcc)
     HOSTS=("--host ivm64")
+    GS_FLAGS="--with-drivers=ivm64"
 elif [ "$TARGET" == "all" ]; then
     TARGETS=(ivm lnx)
     COMPILERS=(ivm64-gcc gcc)
@@ -106,7 +107,7 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
               $ROOT/../afs/configure \
               $HOST --prefix=$BUILDROOT/afs \
               LIBBOXING_DIR=$BUILDROOT/boxing; }
-        { make && make install; }  || { popd ; exit 1; }
+        { make && make install; } #|| { popd ; exit 1; }
         popd
         
         echo "===== ZLIB ====="
@@ -136,7 +137,19 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
               --with-jpeg-lib-dir=$BUILDROOT/file-format-decoders/lib;
             { make && make install; } || { popd ; exit 1; }
         }
-        
+        popd
+
+        echo "===== GHOSTSCRIPT ====="
+        [ ! -d "./ivm-ghostscript" ] && mkdir ivm-ghostscript
+        pushd ivm-ghostscript
+        [ ! -f "./Makefile" ] && {
+            CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
+              $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
+              --prefix=$BUILDROOT/file-format-decoders \
+              --host=ivm64 --disable-threading --disable-contrib \
+              --disable-fontconfig --disable-dbus --disable-cups $GS_FLAGS
+            { make && make so && make install; } || { popd ; exit 1; }
+        }
         popd
         
         popd
@@ -145,6 +158,8 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
 fi
 
 if [ "$BUILD" == "app" ] || [ "$BUILD" == "all" ]; then
+    
+    [ "$CLEAN" == "1" ] && rm -rf $BUILDROOT/Makefile
     
     for ((i=0; i<${#TARGETS[*]}; i++)) do 
 
@@ -164,7 +179,7 @@ if [ "$BUILD" == "app" ] || [ "$BUILD" == "all" ]; then
               LIBTESTDATA_DIR=$ROOT/../testdata \
               $ROOT/configure $HOST
         }
-        make 
+        make TESTDATA_DIR=$TESTDATA_DIR
         popd
         
     done

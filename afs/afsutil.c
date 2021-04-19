@@ -89,7 +89,7 @@ boxing_config** afs_util_control_frame_formats()
 /*!
  *  \brief Unbox control frame
  *
- *  Unboxing an image with of a control frame.
+ *  Unboxing an image with a control frame.
  *
  *  \ingroup afs
  *  \param[out]  control_data Allocated control frame on success.
@@ -139,15 +139,15 @@ int afs_util_unbox_control_frame(afs_control_data** control_data, boxing_image8*
             *control_data = afs_control_data_create();
 
             DBOOL load_ok = afs_control_data_load_string(*control_data, output_data->buffer);
+            boxing_unboxer_utility_free(utility);
+            gvector_free(output_data);
+
             if (load_ok == DFALSE)
             {
                 afs_control_data_free(*control_data);
-                boxing_unboxer_utility_free(utility);
-                gvector_free(output_data);
-
                 return -1;
             }
-            break;
+            return result;
         }
 
         boxing_unboxer_utility_free(utility);
@@ -271,6 +271,7 @@ int afs_util_unbox_file(
 
         // Unbox image
         result = boxing_unboxer_utility_unbox(utility, input_image, output_data);
+        printf("afs_util_unbox_file - unboxing done res=%d\n", result);
         if (result != 0)
         {
             printf("Failed to unbox image\n");
@@ -291,6 +292,7 @@ int afs_util_unbox_file(
             length -= output_data->size - (end_byte_number+1);
         }
 
+        printf("Saving: pos=%d len=%d data=%ul\n", position, length, (long)data);
         if (!parameters->save_file(user, position, data, length))
         {
             printf("Failed to save unboxed data\n");
@@ -307,6 +309,7 @@ int afs_util_unbox_file(
         //fclose(f);
         
         // Update hash
+        printf("Update SHA: len=%d data=%ul\n", length, (long)data);
         afs_sha1_process(&sha, data, length);
         
         boxing_image8_free(input_image);
@@ -320,6 +323,7 @@ int afs_util_unbox_file(
     char hashstring[256];
     afs_sha1_hash_to_hex_string(hash, hashstring);
     
+    printf("Verifying SHA\n");
     if (!boxing_string_equal(toc_file->checksum, hashstring))
     {
         printf("Checksums not matching: %s vs %s\n", toc_file->checksum, hashstring);
@@ -330,9 +334,11 @@ int afs_util_unbox_file(
     // 4b80e413be57e2d807c206fc30055939923e227e
 
     
+    printf("Verify complete\n");
     // Freeing memory
     boxing_unboxer_utility_free(utility);
 
+    printf("Unbox file complete\n");
     return result;
 }
 

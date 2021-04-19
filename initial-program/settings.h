@@ -6,8 +6,9 @@
 //   Stage 2: Reader - Reads app from film
 //   Stage 3: App - Application responsible for decoding rest of film
 
-#define IVM_INCLUDE_READER  1
+#ifndef IVM_INCLUDE_APP
 #define IVM_INCLUDE_APP     1
+#endif
 
 #define LOGGING_ENABLED 1
 

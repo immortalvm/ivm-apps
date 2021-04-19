@@ -1,6 +1,8 @@
 #include "inputdevice.h"
 #include "ivm_io/ivm_io.h"
 
+#include <stdio.h>
+
 DBOOL get_image(boxing_image8** image, unsigned frame)
 {
     printf("reading image %u\n",frame);

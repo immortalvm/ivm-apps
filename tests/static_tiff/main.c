@@ -61,7 +61,7 @@ tsize_t tiff_write(thandle_t st,tdata_t buffer,tsize_t size)
 int tiff_close(thandle_t st)
 {
   return 0;
-};
+}
 
 toff_t tiff_seek(thandle_t st,toff_t pos, int whence)
 {
