@@ -8,7 +8,7 @@ bin_PROGRAMS = ivmip ivmipxz
 
 if ! IVM_COMPILE
 # For use with valgrind checker
-CLFAGS += -fstack-protector-all -g -O0
+CLFAGS = -fstack-protector-all -g -O0
 endif
 
 ivmip_CFLAGS = \
