@@ -58,6 +58,7 @@ AC_CONFIG_FILES([
     Makefile
     app/Makefile
     initial-program/Makefile
+    ivm_xz/Makefile
     tests/static_tiff/Makefile
     tests/static_pdf/Makefile
     tests/boxing_config/Makefile])
