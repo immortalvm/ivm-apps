@@ -77,8 +77,14 @@ Utility library for interfacing the iVM I/O devices.
 
 #+BEGIN_SRC sh
 
-# Get libs
+git clone https://github.com/immortalvm/ivm-apps.git
+cd ivm-apps
+
+# Get libs, vm & compiler
 ./install-libs.sh
+
+# Setup env
+. ./setup.sh
 
 # Build
 ./build.sh -h

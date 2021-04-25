@@ -12,10 +12,24 @@ git clone https://github.com/immortalvm/afs.git || (popd;exit 1)
 git clone https://github.com/immortalvm/tiff-4.1.0 || (popd;exit 1)
 git clone https://github.com/immortalvm/ivm-ghostscript || (popd;exit 1)
 
+# Get compilers - get different versions for regression testing
 wget https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip
 unzip gcc-10.2.0-ivm64-2.0-linux.zip
 wget https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip
 unzip gcc-8.3.0-ivm64-1.2rc1-linux.zip
+
+# Get assembler
+asmver=v0.37_linux-x64
+wget https://github.com/immortalvm/ivm-implementations/releases/download/v0.37/v0.37_linux-x64.zip
+mkdir ivm-$asmver
+pushd ivm-$asmver
+unzip ../$asmver.zip
+chmod a+rx *
+popd
+
+# Get vm implementations
+git clone https://github.com/immortalvm/ivm-implementations.git
+git clone https://github.com/immortalvm/yet-another-ivm-emulator.git
 
 pushd jpeg-9d
 cat << EOF > ivm64.patch

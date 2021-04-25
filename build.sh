@@ -13,7 +13,7 @@ FIXMATH=""
 
 help() {
     echo "Build iVM libraries"
-    echo "$0 [-t|--target <lnx|ivm|all>] [-b|--build <lib|app|all>] [-c|--clean] [-f|--fixmath] [-h|--help]" 
+    echo "$0 [-t|--target <lnx|ivm|all>] [-b|--build <lib|app|vm|all>] [-c|--clean] [-f|--fixmath] [-h|--help]" 
 }
 
 
@@ -47,13 +47,23 @@ else
     exit 1
 fi
 
-if [ "$BUILD" != "app" ] && [ "$BUILD" != "lib" ] && [ "$BUILD" != "all" ]; then
+if [ "$BUILD" != "app" ] && [ "$BUILD" != "lib" ] && [ "$BUILD" != "vm" ] && [ "$BUILD" != "all" ]; then
     echo "Illegal build target: $BUILD";
 fi
 
 
 echo "TARGETS: ${TARGETS[*]}"
 echo "BUILDING: ${BUILD[*]}"
+
+# Build VMs?
+if [ "$BUILD" == "vm" ] || [ "$BUILD" == "all" ]; then
+    pushd $ROOT/../yet-another-ivm-emulator
+    make || { popd ; exit 1; }
+    popd
+    pushd $ROOT/../yet-another-ivm-emulator
+    make || { popd ; exit 1; }
+    popd
+fi
 
 # Build LIBS?
 if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
@@ -143,12 +153,14 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         [ ! -d "./ivm-ghostscript" ] && mkdir ivm-ghostscript
         pushd ivm-ghostscript
         [ ! -f "./Makefile" ] && {
+            PDFARCH="TARGET_ARCH_FILE=$PWD/arch-config/arch_autoconf.h"
             CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
               $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
+              --with-memory-alignment=8 \
               --prefix=$BUILDROOT/file-format-decoders \
               --host=ivm64 --disable-threading --disable-contrib \
               --disable-fontconfig --disable-dbus --disable-cups $GS_FLAGS
-            { make && make so && make install; } || { popd ; exit 1; }
+            { make $PDFARCH && make so $PDFARCH && make install; } || { popd ; exit 1; }
         }
         popd
         
