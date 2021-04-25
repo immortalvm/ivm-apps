@@ -12,6 +12,11 @@ git clone https://github.com/immortalvm/afs.git || (popd;exit 1)
 git clone https://github.com/immortalvm/tiff-4.1.0 || (popd;exit 1)
 git clone https://github.com/immortalvm/ivm-ghostscript || (popd;exit 1)
 
+wget https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip
+unzip gcc-10.2.0-ivm64-2.0-linux.zip
+wget https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip
+unzip gcc-8.3.0-ivm64-1.2rc1-linux.zip
+
 pushd jpeg-9d
 cat << EOF > ivm64.patch
 diff --git a/config.sub b/config.sub
