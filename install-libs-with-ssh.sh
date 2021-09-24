@@ -6,11 +6,11 @@ pushd ..
 wget http://www.zlib.net/zlib-1.2.11.tar.gz || (popd;exit 1)
 tar zxvf zlib-1.2.11.tar.gz  || (popd; exit 1)
 wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || (popd;exit 1)
-git clone git@github.com/immortalvm/testdata.git || (popd;exit 1)
-git clone git@github.com/immortalvm/boxing.git || (popd;exit 1)
-git clone git@github.com/immortalvm/afs.git || (popd;exit 1)
-git clone git@github.com/immortalvm/tiff-4.1.0 || (popd;exit 1)
-git clone git@github.com/immortalvm/ivm-ghostscript || (popd;exit 1)
+git clone git@github.com:immortalvm/testdata.git || (popd;exit 1)
+git clone git@github.com:immortalvm/boxing.git || (popd;exit 1)
+git clone git@github.com:immortalvm/afs.git || (popd;exit 1)
+git clone git@github.com:immortalvm/tiff-4.1.0 || (popd;exit 1)
+git clone git@github.com:immortalvm/ivm-ghostscript || (popd;exit 1)
 
 # Get compilers - get different versions for regression testing
 wget https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip
@@ -28,8 +28,8 @@ chmod a+rx *
 popd
 
 # Get vm implementations
-git clone git@github.com/immortalvm/ivm-implementations.git
-git clone git@github.com/immortalvm/yet-another-ivm-emulator.git
+git clone git@github.com:immortalvm/ivm-implementations.git
+git clone git@github.com:immortalvm/yet-another-ivm-emulator.git
 
 pushd jpeg-9d
 cat << EOF > ivm64.patch
