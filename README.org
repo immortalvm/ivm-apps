@@ -83,8 +83,8 @@ cd ivm-apps
 # Get libs, vm & compiler
 ./install-libs.sh
 
-# Setup env
-. ./setup.sh
+# Setup env (note leading ".")
+. ./setup.sh # Altnatively: source ./setup.sh
 
 # Build
 ./build.sh -h
