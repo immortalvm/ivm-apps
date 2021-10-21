@@ -37,7 +37,6 @@ elif [ "$TARGET" == "ivm" ] ; then
     TARGETS=(ivm)
     COMPILERS=(ivm64-gcc)
     HOSTS=("--host ivm64")
-    GS_FLAGS="--with-drivers=ivm64"
 elif [ "$TARGET" == "all" ]; then
     TARGETS=(ivm lnx)
     COMPILERS=(ivm64-gcc gcc)
@@ -69,7 +68,8 @@ fi
 if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
     for ((i=0; i<${#TARGETS[*]}; i++)) do 
 
-        BUILDROOT=$ROOT/build/${TARGETS[$i]}
+        CURRENT_TARGET=${TARGETS[$i]}
+        BUILDROOT=$ROOT/build/$CURRENT_TARGET
         COMPILER=${COMPILERS[$i]}
         HOST=${HOSTS[$i]}
         
@@ -153,14 +153,26 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         [ ! -d "./ivm-ghostscript" ] && mkdir ivm-ghostscript
         pushd ivm-ghostscript
         [ ! -f "./Makefile" ] && {
-            PDFARCH="TARGET_ARCH_FILE=$PWD/arch-config/arch_autoconf.h"
-            CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
-              $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
-              --with-memory-alignment=8 \
-              --prefix=$BUILDROOT/file-format-decoders \
-              --host=ivm64 --disable-threading --disable-contrib \
-              --disable-fontconfig --disable-dbus --disable-cups $GS_FLAGS
-            { make $PDFARCH && make so $PDFARCH && make install; } || { popd ; exit 1; }
+            if [ "$CURRENT_TARGET" == "ivm" ] ; then 
+                GS_FLAGS="--with-drivers=ivm64"
+                PDFARCH="TARGET_ARCH_FILE=$PWD/arch-config/arch_autoconf.h"
+                CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
+                  $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
+                  --with-memory-alignment=8 \
+                  --prefix=$BUILDROOT/file-format-decoders \
+                  $HOST --disable-threading --disable-contrib \
+                  --disable-fontconfig --disable-dbus --disable-cups $GS_FLAG
+                { make $PDFARCH && make so $PDFARCH && make install; } || { popd ; exit 1; }
+            else
+                $ROOT/../ivm-ghostscript/ghostscript-9.52/autogen.sh
+                CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
+                  $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
+                  --with-memory-alignment=8 \
+                  --prefix=$BUILDROOT/file-format-decoders \
+                  $HOST --disable-threading --disable-contrib \
+                  --disable-fontconfig --disable-dbus --disable-cups
+                { make && make so && make install; } || { popd ; exit 1; }
+            fi
         }
         popd
         
