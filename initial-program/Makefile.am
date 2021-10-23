@@ -49,7 +49,9 @@ ivmip_SOURCES = \
      ../ivm_io/ivm_io.c
 
 
-# Self extracting version
+# Self extracting version - only for ivm target
+if IVM_COMPILE
+
 ivmipxz_CFLAGS = \
      $(AM_CFLAGS) $(CFLAGS) -DIVM_INCLUDE_APP=0\
      -I${top_srcdir} \
@@ -69,11 +71,6 @@ ivmipxz_LDADD = \
      -lunboxing \
      -lm 
 
-if ! IVM_COMPILE
-ivmipxz_LDADD += \
-     -lpng
-endif
-
 ivmipxz_SOURCES = \
      main.c \
      inputdevice.c \
@@ -82,8 +79,6 @@ ivmipxz_SOURCES = \
      ../afs/afsutil.c \
      ../ivm_io/ivm_io.c
 
-
-check_PROGRAMS = ivmip ivmipxz
 
 #ivmip_DATA = $(TESTDATA_DIR)/*png
 
@@ -121,4 +116,10 @@ testopt: ivmip
 
 all-local: asm
 
+check_PROGRAMS = ivmip ivmipxz
 
+else
+
+check_PROGRAMS = ivmip
+
+endif

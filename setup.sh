@@ -25,6 +25,7 @@ echo "You selected $IVM"
 
 export PATH=$PATH:$IVMCC:$IVM
 export TESTDATA_DIR=$PWD/../testdata/reel/png
+export IVM_EMULATOR_INPUT=$PWD/../testdata/reel/png
 
 echo "PATH=$PATH"
 

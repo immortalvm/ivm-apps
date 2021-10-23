@@ -1,6 +1,8 @@
 # The executable to embed
 # TARGET = ivmboot.b
 
+if IVM_COMPILE
+
 VM=vm
 TARGET = $(top_builddir)/initial-program/ivmip.b
 static_TARGET=$TARGET
@@ -35,3 +37,5 @@ distclean-local: clean
 
 test: self_extract.b
 	$(VM) self_extract.b -o out -i $(TESTDATA_DIR) -m 1073741824
+
+endif
