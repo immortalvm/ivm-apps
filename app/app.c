@@ -10,11 +10,6 @@ static ivm_file_format* get_ivm_format(afs_toc_file* file);
 
 int read_and_exec_app(afs_control_data* control_data, DBOOL is_raw)
 {
-  // TODO: Check if control data has an iVM block
-
-  
-  // TODO: Code below here should be on film
-  
   // Decode TOC
   afs_util_unbox_toc_parameters toc_params;
   toc_params.control_data = control_data;

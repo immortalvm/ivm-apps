@@ -2,8 +2,11 @@
 
 /* Trivial versions of malloc and free */
 
-//extern uint64_t __heap_start;
+#if OLD_HEAP_NAME
+extern uint64_t __heap_start; // Name of heap pointer can change based on compiler version
+#else
 extern uint64_t __IVM64_heap_pointer__;
+#endif
 
 uint64_t next_free = 0;
 
@@ -11,7 +14,11 @@ void *trivial_malloc (size_t size) {
   uint64_t tmp;
 
   if (next_free == 0) {
+#if OLD_HEAP_NAME
+    next_free = __heap_start;
+#else
     next_free = __IVM64_heap_pointer__;
+#endif
   }
   tmp = next_free;
   next_free += size;

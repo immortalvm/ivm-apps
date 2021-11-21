@@ -6,7 +6,7 @@ iVM-app modules:
  - *Initial program*: Program that is started by the virtual machine and decompresses the rest of the application. 
  - *Unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
  - *AFS*: Archival file system, organises the frames on film into files.
- - *Assembler*: Assembles decoded images into files.
+ - *Assembler*: Assembles decoded images into files (not to be confused with the ivm-assembler part of the toolchain).
  - *File decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices. The file decoder are using stadardized open source decoders and adapting the to iVM use.
 
 Modules the user needs to provide:
@@ -39,14 +39,11 @@ Core libraries for decoding frames and assembling frames into files.
 
  - iVM repo: https://github.com/preservationvm/boxing
  - Source: https://github.com/piql/boxing
- - Compiling: CC=ivm64-gcc  CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing
 
 ** AFS
 
  - iVM repo: https://github.com/preservationvm/afs
  - Source: https://github.com/piql/afs
- - Compiling: CC=ivm64-gcc CFLAGS="-DBOXING_USE_C99_LIBRARIES" ./configure --host ivm64 --prefix=<path>/ivm-apps/boxing  LIBBOXING_DIR=<path>/ivm-apps/boxing
-
 
 * File format decoders
 
@@ -55,20 +52,28 @@ The file format decoders are based on standardized open-source components and sl
 Since the iVM is not POSIX file system compilant, the libraries used cannot use any kind of file I/O. Similar, the iVM does not support multithreading so the library must be able to compile as a single threaded library. 
 
 The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-decoders/~, so that a ~make install~ will install the libraries in a folder where the ivm-app expects to find them.
-
-** ZLIB
+** Supported file formats
+*** ZLIB
 
  - Source: http://www.zlib.net/zlib-1.2.11.tar.gz
 
-** JPEG
+*** JPEG
 
  - Source: http://ijg.org/files/jpegsrc.v9d.tar.gz
 
-** TIFF 
+*** TIFF 
 
  - iVM repo: https://github.com/preservationvm/tiff-v4.1.0
  - Source: libtiff-v4.1.0 from https://download.osgeo.org/libtiff
 
+*** PDF
+Work in progress. The PDF ghostscript library compiles and runs standalone using ivm compiler. But some outstanding issues in integration.
+** How to add support for a new file format
+1. Check that the file format library meets the requirements for iVM: No filesystem and no threads. Many mature libraries supports this through use of defines and / or configure switches. If not the library will have to be modified.
+2. Compile the library targeting the iVM, see build.sh for examples on how this is done for other libs.
+4. Add file format test data to testdata repo.
+5. Create static test driver under tests, see [tests/static_tiff/main.c] for example.
+3. Implement the driver for the ivm-app and add it to list of supported formats, see [ivm_formats/ivm_formats.c].
 * iVM IO
 
 Utility library for interfacing the iVM I/O devices.

@@ -4,15 +4,17 @@ TESTDATA_DIR=reel/png
 OUT_DIR=out
 ivmipdir = testdata
 bindir=.
-bin_PROGRAMS = ivmip ivmipxz
 
-if ! IVM_COMPILE
+if !IVM_COMPILE
 # For use with valgrind checker
 CLFAGS = -fstack-protector-all -g -O0
+else
+IVM_TARGETS=ivmipxz ivmipscans # xz is self extracting version 
 endif
+bin_PROGRAMS = ivmip $(IVM_TARGETS)
 
 ivmip_CFLAGS = \
-     $(AM_CFLAGS) $(CLFAGS) \
+     $(AM_CFLAGS) $(CLFAGS) -DIVM_RAW_TESTDATA=1\
      -I${top_srcdir} \
      -I${abs_top_builddir}/afs/include \
      -I${abs_top_builddir}/boxing/include \
@@ -26,6 +28,10 @@ ivmip_CFLAGS = \
      -L$(LIBAFS_DIR) \
      -L../app
 
+if !IVM_COMPILE
+LNX_LIBS=-lpng
+endif
+
 ivmip_LDADD = \
      -livmapp \
      -lafs \
@@ -33,12 +39,8 @@ ivmip_LDADD = \
      -ltiff \
      -ljpeg \
      -lz \
-     -lm 
-
-if ! IVM_COMPILE
-ivmip_LDADD += \
-     -lpng
-endif
+     -lm \
+     $(LNX_LIBS)
 
 ivmip_SOURCES = \
      main.c \
@@ -48,12 +50,29 @@ ivmip_SOURCES = \
      ../afs/afsutil.c \
      ../ivm_io/ivm_io.c
 
-
-# Self extracting version - only for ivm target
 if IVM_COMPILE
 
+# Build for reading scans instead of raw files
+ivmipscans_CFLAGS = \
+     $(AM_CFLAGS) $(CLFAGS) -DIVM_RAW_TESTDATA=1\
+     -I${top_srcdir} \
+     -I${abs_top_builddir}/afs/include \
+     -I${abs_top_builddir}/boxing/include \
+     -I${abs_top_builddir}/boxing/thirdparty/glib \
+     -I${abs_top_builddir}/boxing/thirdparty/minixml/inc \
+     -I../file-format-decoders/include \
+     -I${top_srcdir}/app \
+     -I${top_srcdir}/initial-program \
+     -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
+     -L$(LIBBOXING_DIR) \
+     -L$(LIBAFS_DIR) \
+     -L../app
+ivmipscans_LDADD = $(ivmip_LDADD)
+ivmipscans_SOURCES = $(ivmip_SOURCES)
+
+# Experimental: Dynamic app loading - only for ivm target
 ivmipxz_CFLAGS = \
-     $(AM_CFLAGS) $(CFLAGS) -DIVM_INCLUDE_APP=0\
+     $(AM_CFLAGS) $(CFLAGS) -DIVM_INCLUDE_APP=0 -DIVM_RAW_TESTDATA=0\
      -I${top_srcdir} \
      -I${abs_top_builddir}/afs/include \
      -I${abs_top_builddir}/boxing/include \
@@ -64,7 +83,6 @@ ivmipxz_CFLAGS = \
      -L$(LIBBOXING_DIR)/../../file-format-decoders/lib \
      -L$(LIBBOXING_DIR) \
      -L$(LIBAFS_DIR)
-
 
 ivmipxz_LDADD = \
      -lafs \
@@ -78,9 +96,7 @@ ivmipxz_SOURCES = \
      settings.h \
      ../afs/afsutil.c \
      ../ivm_io/ivm_io.c
-
-
-#ivmip_DATA = $(TESTDATA_DIR)/*png
+endif
 
 install-data-hook:
 	echo "mkdir -p out" > $(DESTDIR)/test.sh
@@ -90,6 +106,10 @@ install-data-hook:
 ivmip.b: ivmip
 	ivm as  --noopt --bin "ivmip.b" --sym "ivmip.sym" ivmip
 asm: ivmip.b
+
+ivmipscans.b: ivmipscans
+	ivm as  --noopt --bin "ivmipscans.b" --sym "ivmipscans.sym" ivmipscans
+asmscans: ivmipscans.b
 
 asmxz: ivmipxz
 	ivm as  --bin "ivmipxz.b" --sym "ivmipxz.sym" ivmipxz
@@ -112,14 +132,10 @@ testopt: ivmip
 	mkdir -p $(OUT_DIR)
 	$(VM) ivmip-opt.b -o $(OUT_DIR) -i $(TESTDATA_DIR) -m 2073741824
 
+all-local: asm asmscans
+clean-local:
+	-rm *.sym *.b
+
 .PHONY: test asm asmxz asmopt
 
-all-local: asm
-
-check_PROGRAMS = ivmip ivmipxz
-
-else
-
-check_PROGRAMS = ivmip
-
-endif
+check_PROGRAMS = ivmip $(IVM_TARGETS)

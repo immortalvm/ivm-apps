@@ -11,6 +11,8 @@ git clone https://github.com/immortalvm/boxing.git || (popd;exit 1)
 git clone https://github.com/immortalvm/afs.git || (popd;exit 1)
 git clone https://github.com/immortalvm/tiff-4.1.0 || (popd;exit 1)
 git clone https://github.com/immortalvm/ivm-ghostscript || (popd;exit 1)
+git clone https://github.com/immortalvm/ivm-doc || (popd;exit 1)
+git clone https://github.com/immortalvm/ivm-hex-dump || (popd;exit 1)
 
 # Get compilers - get different versions for regression testing
 wget https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip
@@ -19,13 +21,16 @@ wget https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3
 unzip gcc-8.3.0-ivm64-1.2rc1-linux.zip
 
 # Get assembler
-asmver=v0.37_linux-x64
-wget https://github.com/immortalvm/ivm-implementations/releases/download/v0.37/v0.37_linux-x64.zip
-mkdir ivm-$asmver
-pushd ivm-$asmver
-unzip ../$asmver.zip
-chmod a+rx *
-popd
+declare -a asmver=(v0.36 v0.37)
+for a in ${asmver[@]}; do
+    asm="${a}_linux-x64"
+    wget https://github.com/immortalvm/ivm-implementations/releases/download/$a/$asm.zip
+    mkdir ivm-$asm
+    pushd ivm-$asm
+    unzip ../$asm.zip
+    chmod a+rx *
+    popd
+done
 
 # Get vm implementations
 git clone https://github.com/immortalvm/ivm-implementations.git
@@ -52,6 +57,14 @@ popd
 
 pushd testdata
 ./create-testdata.sh || { popd; exit 1; }
+popd
+
+pushd ivm-doc
+make || { popd; exit 1; }
+popd
+
+pushd ivm-hex-dump
+./test.sh || { popd; exit 1; }
 popd
 
 popd

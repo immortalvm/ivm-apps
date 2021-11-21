@@ -20,16 +20,19 @@
 
 unsigned int PDF_POS = 0;
 
+#define lprintf(a)
+#define lprintf1(a,b)
+
 static int read_stdin(void *caller_handle, char *buf, int len) {
     if (PDF_POS == PDF_SIZE) {
-        printf("reading EOF\n");
+        lprintf("reading EOF\n");
         return 0;
     }
     if (PDF_POS > PDF_SIZE) {
-        printf("reading error\n");
+        lprintf("reading error\n");
         return -1;
     }
-    printf("reading %d\n", len);
+    lprintf1("reading %d\n", len);
     
     size_t l = PDF_POS + len > PDF_SIZE ? PDF_SIZE - PDF_POS : len;
     memcpy(buf, PDF_DATA+PDF_POS, l);
@@ -39,12 +42,12 @@ static int read_stdin(void *caller_handle, char *buf, int len) {
 
 int stdout_fn(void *caller_handle, const char *str, int len)
 {
-    printf("%s", str);
+    lprintf1("%s", str);
 }
 
 int stderr_fn(void *caller_handle, const char *str, int len)
 {
-    printf("%s", str);
+    lprintf1("%s", str);
 }
 
 // PDF library instance
@@ -57,30 +60,30 @@ int main(int argc, char *argv[])
     int gsargc;
     int ac = 0;
     gsargv[ac++] = ""; // Ignored by API
-    //gsargv[ac++] = "-dNOPAUSE";
-    //gsargv[ac++] = "-dBATCH";
+    gsargv[ac++] = "-dNOPAUSE"; // Non-interactive
+    gsargv[ac++] = "-dBATCH"; // Non-interactive
     gsargv[ac++] = "-dSAFER";
     gsargv[ac++] = "-dDEBUG"; // Must link with gs debug
-    gsargv[ac++] = "-sDEVICE=ivm64";
+    gsargv[ac++] = "-sDEVICE=png256";
     gsargv[ac++] = "-sOutputFile=-";
     gsargv[ac++] = "-";
     //gsargv[ac++] = "--debug";
     gsargc=ac;
 
-    printf("Creating instance\n");
+    lprintf("Creating instance\n");
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0) {
-        printf("Error creating instance\n");
+        lprintf("Error creating instance\n");
         return 1;
     }
     
-    printf("Set encoding\n");
+    lprintf("Set encoding\n");
     if (gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8) == 0) {
-        printf("Set stdio\n");
+        lprintf("Set stdio\n");
         if (gsapi_set_stdio(minst,read_stdin, stdout_fn, stderr_fn) == 0) {
-            printf("Init\n");
+            lprintf("Init\n");
             if ( gsapi_init_with_args(minst, gsargc, gsargv) == 0) {
-                printf("Exit\n");
+                lprintf("Exit\n");
                 code = gsapi_exit(minst);
             }
         }

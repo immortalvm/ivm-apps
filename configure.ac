@@ -83,3 +83,8 @@ AC_MSG_RESULT([
         libafs:                 ${LIBAFS_DIR}
         libtestdata:            ${LIBTESTDATA_DIR}
 ])
+AM_COND_IF([IVM_COMPILE],
+  [AC_MSG_RESULT([
+        ivm_compile:            yes])],
+  [AC_MSG_RESULT([
+        ivm_compile:            no])])

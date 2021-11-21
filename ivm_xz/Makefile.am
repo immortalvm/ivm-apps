@@ -4,7 +4,7 @@
 if IVM_COMPILE
 
 VM=vm
-TARGET = $(top_builddir)/initial-program/ivmip.b
+TARGET = $(top_builddir)/initial-program/ivmipscans.b
 static_TARGET=$TARGET
 
 bin_PROGRAMS = self_extract
