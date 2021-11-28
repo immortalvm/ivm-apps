@@ -1,34 +1,36 @@
 * Introduction
 
-The iVM-app is the SW module that is stored on the long-term storage medium and will be used in the future to decode the digital content stored after iVM boot. This app needs to be transcribed from the film and be feed into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the machine.
+The iVM-app is an implementation of an *initial-program* that decodes and renders digital data stored as 2D-barcodes (called boxing format) on the long-term storage medium. The application binary should be stored as human readable hex codes, and future users should transcribe the hex codes feed the binary stream into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the application.
 
 iVM-app modules:
- - *Initial program*: Program that is started by the virtual machine and decompresses the rest of the application. 
- - *Unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
- - *AFS*: Archival file system, organises the frames on film into files.
- - *Assembler*: Assembles decoded images into files (not to be confused with the ivm-assembler part of the toolchain).
- - *File decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices. The file decoder are using stadardized open source decoders and adapting the to iVM use.
+ - *ivm-xz*: Decompresses and then executes initial-program.
+ - *initial-program*: Responsible for unboxing frames, decoding table-of-content, decoding files and render the supported file-formats.
+ - *app*: Lib called by initial-program to do the actual file decoding. 
+ - *unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
+ - *AFS*: Archival file system, organizes the frames on storage-medium into files.
+ - *assembler*: Concatenates decoded images into files (not to be confused with the ivm-assembler part of the toolchain).
+ - *file decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices.
 
 Modules the user needs to provide:
- - *iVM implementation*: Implementation of iVM spesification With support for starting iVM-app from memory or file. The iVM must communicate with an image source device, feeding digitized images into the iVM and it must implement output devices support the formats provided by the iVM spesification.
+ - *iVM implementation*: Implementation of iVM specification with support for starting iVM-app from memory or file. The iVM must communicate with an image source device, feeding digitized images into the iVM and it must implement output devices supporting the formats provided by the iVM specification.
  - *iVM execution environment*: Operation system or similar where the iVM runs. 
  - *Image source device*: Device capable of digitizing the frames on the storage medium.
 
 #+BEGIN_SRC ditaa 
-                    +----------------+
-                    | iVM-app        |
-                    |                |
-                    |                |
-                    |                |
-  +--------+        +----------------+         +--------+
-  | image  |        | iVM            |         | I/O    |
-  | source |        | implementation |         | device |
-  | device |        |                |         |        |
-  |        +------->+                +<------->+        |
-  +--------+        +----------------+         +--------+
-                    | execution      |
-                    | environment    |
-                    +----------------+
+                    +-----------------+
+                    | initial-program |
+                    |                 |
+                    |-----------------|
+                    | ivm-xz          |
+  +--------+        +-----------------+         +--------+
+  | image  |        | iVM             |         | I/O    |
+  | source |        | implementation  |         | device |
+  | device |        |                 |         |        |
+  |        +------->+                 +<------->+        |
+  +--------+        +-----------------+         +--------+
+                    | execution       |
+                    | environment     |
+                    +-----------------+
 #+END_SRC
 
 * Boxing and AFS library
@@ -49,7 +51,7 @@ Core libraries for decoding frames and assembling frames into files.
 
 The file format decoders are based on standardized open-source components and slightly modified so it complies with the iVM-compiler.
 
-Since the iVM is not POSIX file system compilant, the libraries used cannot use any kind of file I/O. Similar, the iVM does not support multithreading so the library must be able to compile as a single threaded library. 
+Since the iVM is not POSIX file system compliant, the libraries used cannot use any kind of file I/O. Similar, the iVM does not support multithreading so the library must be able to compile as a single threaded library. 
 
 The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-decoders/~, so that a ~make install~ will install the libraries in a folder where the ivm-app expects to find them.
 ** Supported file formats
@@ -69,7 +71,7 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 *** PDF
 Work in progress. The PDF ghostscript library compiles and runs standalone using ivm compiler. But some outstanding issues in integration.
 ** How to add support for a new file format
-1. Check that the file format library meets the requirements for iVM: No filesystem and no threads. Many mature libraries supports this through use of defines and / or configure switches. If not the library will have to be modified.
+1. Check that the file format library meets the requirements for iVM: No file system and no threads. Many mature libraries supports this through use of defines and / or configure switches. If not the library will have to be modified.
 2. Compile the library targeting the iVM, see build.sh for examples on how this is done for other libs.
 4. Add file format test data to testdata repo.
 5. Create static test driver under tests, see [tests/static_tiff/main.c] for example.
@@ -89,9 +91,17 @@ cd ivm-apps
 ./install-libs.sh
 
 # Setup env (note leading ".")
-. ./setup.sh # Altnatively: source ./setup.sh
+. ./setup.sh # Alternatively: source ./setup.sh
 
 # Build
-./build.sh -h
+./build.sh -t ivm -b lib
+./build.sh -t ivm -b app
+
+# Test
+cd build/ivm/tests/static_tiff
+./static_tiff # Will assemble and run
+
+# Test with another iVM implementation
+IVM_EMU=../../../../../yet_another_ivm_emulator/ivm_emu_parallel ./static_tiff
 
 #+END_SRC

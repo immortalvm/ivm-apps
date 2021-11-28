@@ -102,6 +102,7 @@ install-data-hook:
 	echo "mkdir -p out" > $(DESTDIR)/test.sh
 	echo "ivm ivmip.b -o out -i ${ivmipdir}  -m 2073741824" >> $(DESTDIR)/test.sh
 
+if IVM_COMPILE
 # Optimized and non optimized asm / test
 ivmip.b: ivmip
 	ivm as  --noopt --bin "ivmip.b" --sym "ivmip.sym" ivmip
@@ -132,7 +133,10 @@ testopt: ivmip
 	mkdir -p $(OUT_DIR)
 	$(VM) ivmip-opt.b -o $(OUT_DIR) -i $(TESTDATA_DIR) -m 2073741824
 
+
 all-local: asm asmscans
+endif
+
 clean-local:
 	-rm *.sym *.b
 
