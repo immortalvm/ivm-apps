@@ -61,6 +61,7 @@ AC_CONFIG_FILES([
     ivm_xz/Makefile
     tests/static_tiff/Makefile
     tests/static_pdf/Makefile
+    tests/static_jpeg/Makefile
     tests/boxing_config/Makefile])
 AC_OUTPUT
 AC_MSG_RESULT([

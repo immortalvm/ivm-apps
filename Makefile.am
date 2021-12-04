@@ -1,6 +1,6 @@
 AM_CFLAGS = $(all_includes)
 
-SUBDIRS = app initial-program ivm_xz tests/static_tiff tests/boxing_config tests/static_pdf
+SUBDIRS = app initial-program ivm_xz tests/static_tiff tests/boxing_config tests/static_pdf tests/static_jpeg
 
 EXTRA_DIST = README.org doc autogen.sh initial-program/fix_and_run.sh
 
