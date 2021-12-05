@@ -161,10 +161,10 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
                   --with-memory-alignment=8 \
                   --prefix=$BUILDROOT/file-format-decoders \
                   $HOST --disable-threading --disable-contrib \
-                  --disable-fontconfig --disable-dbus --disable-cups $GS_FLAG
+                  --disable-fontconfig --disable-dbus --disable-cups $GS_FLAGS
                 { make $PDFARCH && make so $PDFARCH && make install; } || { popd ; exit 1; }
             else
-                $ROOT/../ivm-ghostscript/ghostscript-9.52/autogen.sh
+                #$ROOT/../ivm-ghostscript/ghostscript-9.52/autogen.sh
                 CC=$COMPILER CFLAGS="-DGS_NO_FILESYSTEM -DCMS_NO_PTHREADS" LDFLAGS="" \
                   $ROOT/../ivm-ghostscript/ghostscript-9.52/configure \
                   --with-memory-alignment=8 \

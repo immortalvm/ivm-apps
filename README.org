@@ -102,6 +102,6 @@ cd build/ivm/tests/static_tiff
 ./static_tiff # Will assemble and run
 
 # Test with another iVM implementation
-IVM_EMU=../../../../../yet_another_ivm_emulator/ivm_emu_parallel ./static_tiff
+../../../../../yet_another_ivm_emulator/ivm_emu_parallel -o out ./static_tiff
 
 #+END_SRC

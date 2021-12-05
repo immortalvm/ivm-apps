@@ -12,7 +12,7 @@ static_pdf_CFLAGS = \
      $(CFLAGS) \
      -I../../file-format-decoders/include \
      -L../../file-format-decoders/lib \
-     -L../../ivm-ghostscript/sobin \
+     -L../../ivm-ghostscript/so$(SODEBUG)bin \
      -I$(LIBTESTDATA_DIR)/pdf \
      -I${top_srcdir}/../ivm-ghostscript/ghostscript-9.52/psi \
      -I${top_srcdir}/../ivm-ghostscript/ghostscript-9.52/base

@@ -28,3 +28,11 @@ app="build/ivm/ivm_xz/self_extract.b"
 
 ../ivm-hex-dump/create-human-readable-app.sh $w $h $fontsize $out/ip $app
 
+# Create package for distribution
+tar czf human-readable-section.tgz $out/*pdf $out/ip/*.png
+
+# Validate
+../ivm-hex-dump/ivm-hex-dump -d -i $out/ip | diff $app -
+if [ "$?" == "0" ] ; then
+    echo "Validation OK"
+fi
