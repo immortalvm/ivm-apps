@@ -121,9 +121,9 @@ if [ "$BUILD" == "lib" ] || [ "$BUILD" == "all" ]; then
         popd
         
         echo "===== ZLIB ====="
-        [ ! -d zlib-1.2.11 ] && mkdir zlib-1.2.11
-        pushd zlib-1.2.11 
-        [ ! -f "./Makefile" ] && { CC=$COMPILER $ROOT/../zlib-1.2.11/configure --static --prefix=$BUILDROOT/file-format-decoders; }
+        [ ! -d zlib-1.2.12 ] && mkdir zlib-1.2.12
+        pushd zlib-1.2.12 
+        [ ! -f "./Makefile" ] && { CC=$COMPILER $ROOT/../zlib-1.2.12/configure --static --prefix=$BUILDROOT/file-format-decoders; }
         { make && make install; } || { popd ; exit 1; }
         popd
 

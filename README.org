@@ -57,7 +57,7 @@ The libraries should be configured using ~--prefix <path>/ivm-apps/file-format-d
 ** Supported file formats
 *** ZLIB
 
- - Source: http://www.zlib.net/zlib-1.2.11.tar.gz
+ - Source: http://www.zlib.net/zlib-1.2.12.tar.gz
 
 *** JPEG
 

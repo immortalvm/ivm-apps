@@ -3,8 +3,8 @@ echo "This will check-out and install all needed libraries one directory up."
 echo "Press <enter> to continue"
 read
 pushd ..
-wget http://www.zlib.net/zlib-1.2.11.tar.gz || (popd;exit 1)
-tar zxvf zlib-1.2.11.tar.gz  || (popd; exit 1)
+wget http://www.zlib.net/zlib-1.2.12.tar.gz || (popd;exit 1)
+tar zxvf zlib-1.2.12.tar.gz  || (popd; exit 1)
 wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || (popd;exit 1)
 git clone https://github.com/immortalvm/testdata.git || (popd;exit 1)
 git clone https://github.com/immortalvm/boxing.git || (popd;exit 1)
