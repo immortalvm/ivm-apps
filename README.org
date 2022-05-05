@@ -1,6 +1,6 @@
 * Introduction
 
-The iVM-app is an implementation of an *initial-program* that decodes and renders digital data stored as 2D-barcodes (called boxing format) on the long-term storage medium. The application binary should be stored as human readable hex codes, and future users should transcribe the hex codes feed the binary stream into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the application.
+The iVM-app is an implementation of an *initial-program* that decodes and renders digital data stored as 2D-barcodes (called boxing format) on the long-term storage medium. The application binary should be stored as human readable hex codes, and future users should transcribe the hex codes and feed the binary stream into the iVM machine memory. The application is self extracting to save storage space and minimize the amount of manual typing needed to bootstrap the application.
 
 iVM-app modules:
  - *ivm-xz*: Decompresses and then executes initial-program.
@@ -8,7 +8,6 @@ iVM-app modules:
  - *app*: Lib called by initial-program to do the actual file decoding. 
  - *unboxer*: Decodes images read from the image input device and return a bitstream and status codes.
  - *AFS*: Archival file system, organizes the frames on storage-medium into files.
- - *assembler*: Concatenates decoded images into files (not to be confused with the ivm-assembler part of the toolchain).
  - *file decoder*: Decodes files from the assembler and renders them to one or more of the iVM output devices.
 
 Modules the user needs to provide:
