@@ -86,6 +86,13 @@ Utility library for interfacing the iVM I/O devices.
 git clone https://github.com/immortalvm/ivm-apps.git
 cd ivm-apps
 
+# Install required packages:
+sudo apt-get install unzip
+sudo apt-get install imagemagick
+sudo apt install make
+sudo apt install texlive-latex-extra
+sudo apt install gcc
+
 # Get libs, vm & compiler
 ./install-libs.sh
 
