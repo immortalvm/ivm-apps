@@ -92,6 +92,9 @@ sudo apt-get install imagemagick
 sudo apt install make
 sudo apt install texlive-latex-extra
 sudo apt install gcc
+sudo apt install autoconf
+sudo apt-get install pkg-config
+sudo apt-get install g++
 
 # Get libs, vm & compiler
 ./install-libs.sh
