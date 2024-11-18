@@ -16,10 +16,13 @@ abort_with_error() {
 
 # Get code
 echo "This will check-out and install all needed libraries one directory up."
-echo "Press <enter> to continue"
-read
+# Allow skipping the prompt
+if [[ $* != *-y* ]]; then
+    echo "Press <enter> to continue"
+    read
+fi
 pushd ..
-wget http://www.zlib.net/zlib-1.2.12.tar.gz || abort_with_error "downloading zlib failed"
+wget http://www.zlib.net/fossils/zlib-1.2.12.tar.gz || abort_with_error "downloading zlib failed"
 tar zxvf zlib-1.2.12.tar.gz  || abort_with_error "unpacking zlib failed"
 wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || abort_with_error "downloading and unpacking the jpeg source code failed"
 git clone ${GIT_METHOD}immortalvm/testdata.git || abort_with_error "cloning the testdata repository failed"
