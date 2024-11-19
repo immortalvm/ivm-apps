@@ -68,14 +68,17 @@ clone immortalvm ivm-hex-dump
 clone immortalvm ROAEshell
 
 # Get compilers - get different versions for regression testing
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.4/gcc-12.2.0-ivm64-3.4-linux.zip" "ivmc/3.4"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.3/gcc-12.2.0-ivm64-3.3-linux.zip" "ivmc/3.3"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.2/gcc-12.2.0-ivm64-3.2-linux.zip" "ivmc/3.2"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.1/gcc-12.2.0-ivm64-3.1-linux.zip" "ivmc/3.1"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.0/gcc-12.2.0-ivm64-3.0-linux.zip" "ivmc/3.0"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.1/gcc-10.2.0-ivm64-2.1-linux.zip" "ivmc/2.1"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip" "ivmc/2.0"
-dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip" "ivmc/1.2rc1"
+mkdir -p ivmc
+pushd ivmc
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.4/gcc-12.2.0-ivm64-3.4-linux.zip" "3.4"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.3/gcc-12.2.0-ivm64-3.3-linux.zip" "3.3"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.2/gcc-12.2.0-ivm64-3.2-linux.zip" "3.2"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.1/gcc-12.2.0-ivm64-3.1-linux.zip" "3.1"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.0/gcc-12.2.0-ivm64-3.0-linux.zip" "3.0"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.1/gcc-10.2.0-ivm64-2.1-linux.zip" "2.1"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip" "2.0"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip" "1.2rc1"
+popd
 
 # Get assembler
 declare -a asmver=(v0.36 v0.37)
