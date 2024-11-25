@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Choose a file to compile into iVM</title>
+  </head>
+
+  <body>
+    <form>
+      <p>
+        <input type="file" name="file" />
+        <input
+          name="tiffMode"
+          id="tiffMode"
+          type="checkbox"
+          checked="checked"
+        /><label for="tiffMode">TIFF mode</label>
+      </p>
+      <p>
+        <input type="submit" value="Compile to iVM demo" />
+        <button class="ROAEshell">Run ROAEshell in iVM</button>
+        <span class="status"></span>
+      </p>
+    </form>
+    <textarea
+      cols="84"
+      rows="13"
+      class="build_output"
+      placeholder="Setup and build output..."
+    ></textarea>
+    <textarea
+      cols="84"
+      rows="13"
+      class="run_output"
+      placeholder="Run output..."
+    ></textarea>
+    <input
+      type="text"
+      placeholder="Command-line input..."
+      name="run_input"
+      disabled="disabled"
+    />
+    <p class="media_output"></p>
+    <script type="application/javascript">
+      const fs = require("fs");
+      const { createInterface } = require("readline");
+      const cp = require("child_process");
+      const { Writable } = require("stream");
+
+      const form = document.querySelector("form");
+      if (!form) throw new Error("Missing form");
+
+      const roae_button = document.querySelector("button.ROAEshell");
+      if (!roae_button) throw new Error("Missing ROAEshell button");
+
+      const status = document.querySelector("span.status");
+      if (!status) throw new Error("Missing status");
+
+      const build_output = document.querySelector("textarea.build_output");
+      if (!build_output) throw new Error("Missing build output textarea");
+
+      const run_output = document.querySelector("textarea.run_output");
+      if (!run_output) throw new Error("Missing run output textarea");
+
+      const run_input = document.querySelector('input[name="run_input"]');
+      if (!run_input) throw new Error("Missing run input");
+
+      const media_output = document.querySelector("p.media_output");
+      if (!media_output) throw new Error("Missing image output");
+
+      const stream_to_console = async (stream, error) => {
+        const rl = createInterface(stream);
+        for await (const line of rl) {
+          if (error) console.error(line);
+          else console.log(line);
+        }
+      };
+
+      const wire_output_up = (proc) => {
+        stream_to_console(proc.stdout);
+        stream_to_console(proc.stderr);
+      };
+
+      const stream_to_elem = (stream, elem, doScroll) => {
+        stream.on("data", (chunk) => {
+          elem.textContent += new TextDecoder().decode(chunk);
+          if (doScroll) elem.scrollTop = elem.scrollHeight;
+        });
+      };
+      const wire_output_to = (proc, elem, keep_lines) => {
+        if (keep_lines) elem.textContent += "\n\n";
+        else elem.textContent = "";
+        elem.scrollTop = elem.scrollHeight;
+        stream_to_elem(proc.stdout, elem, true);
+        stream_to_elem(proc.stderr, elem, true);
+      };
+
+      const wire_input_to = (input, proc, output) => {
+        let prompt = "";
+        const keyDownListener = (e) => {
+          if (e.key === "Enter") {
+            const line = input.value + "\n";
+            output.textContent =
+              output.textContent.split("\n").slice(0, -1).join("\n") +
+              "\n" +
+              prompt;
+            input.value = "";
+            prompt = "";
+            proc.stdin.write(line);
+          }
+        };
+        const inputListener = (e) => {
+          if (prompt === "") {
+            prompt = output.textContent.split("\n").pop();
+          }
+          output.textContent =
+            output.textContent.split("\n").slice(0, -1).join("\n") +
+            "\n" +
+            prompt +
+            input.value;
+        };
+        input.addEventListener("keydown", keyDownListener);
+        input.addEventListener("input", inputListener);
+        return () => {
+          input.removeEventListener("keydown", keyDownListener);
+          input.removeEventListener("input", inputListener);
+        };
+      };
+
+      const waitExit = (proc) =>
+        new Promise((resolve, reject) =>
+          proc.once("exit", (code) =>
+            code === 0
+              ? resolve()
+              : reject(new Error("exited with code: " + code))
+          )
+        );
+
+      const dockerSpawn = (command) => {
+        return cp.spawn(
+          "sudo",
+          ["docker", "exec", "-i", "ivm-apps", "bash", "-c", command],
+          { stdio: "pipe" }
+        );
+      };
+      const dockerSpawnSimple = async (command) => {
+        const proc = dockerSpawn(command);
+        wire_output_up(proc);
+        await waitExit(proc);
+      };
+
+      const data_url_from_chunks = (chunks, type) => {
+        return URL.createObjectURL(new Blob(chunks, { type }));
+      };
+
+      const build_image_element_from_chunks = (chunks, filename) => {
+        const url = data_url_from_chunks(chunks, "image/png");
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        const img = document.createElement("img");
+        img.src = url;
+        a.appendChild(img);
+        return a;
+      };
+
+      const build_audio_element_from_chunks = (chunks, filename) => {
+        const url = data_url_from_chunks(chunks, "audio/wav");
+        const span = document.createElement("span");
+        const audio = document.createElement("audio");
+        audio.setAttribute("controls", "controls");
+        audio.src = url;
+        span.appendChild(audio);
+        const button = document.createElement("button");
+        button.textContent = "Download";
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.appendChild(button);
+        span.appendChild(a);
+        return span;
+      };
+
+      const fileMap = {
+        jpg: "JPEG image file",
+        tiff: "TIFF image file",
+        pdf: "document",
+      };
+
+      let roae_running = false;
+      let shell = null;
+      let cleanup = null;
+      roae_button.addEventListener("click", (e) => {
+        e.preventDefault();
+        (async () => {
+          if (roae_running) {
+            roae_running = false;
+            status.textContent = "";
+            roae_button.textContent = "Run ROAEshell in iVM";
+            shell.kill("SIGKILL");
+            shell = null;
+            cleanup();
+            cleanup = null;
+            run_input.setAttribute("disabled", "disabled");
+            run_output.textContent = "";
+          } else {
+            roae_running = true;
+            status.textContent = "Running ROAEshell...";
+            roae_button.textContent = "Stop ROAEshell";
+            shell = dockerSpawn(
+              "cd /root/immortalvm/ROAEshell/run-ivm64; ./roaeshell"
+            );
+            wire_output_to(shell, run_output, true);
+            run_input.removeAttribute("disabled");
+            cleanup = wire_input_to(run_input, shell, run_output);
+          }
+        })();
+        return false;
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const file = fd.get("file");
+        if (!file) return false;
+
+        console.log(fd);
+        const tiffMode = fd.get("tiffMode") === "on";
+
+        (async () => {
+          const file_buffer = await file.arrayBuffer();
+          const ext = file.name.split(".").pop();
+          const basepath =
+            "/root/immortalvm/testdata/" + (ext === "tiff" ? "tiff" : "source");
+          const original_filename_no_ext = file.name
+            .split(".")
+            .slice(0, -1)
+            .join(".");
+          if (
+            ext !== "jpg" &&
+            ext !== "pdf" &&
+            ext !== "wav" &&
+            ext !== "tiff"
+          ) {
+            status.textContent = "ERROR: Unsupported file type: " + ext;
+            return;
+          }
+          const filename =
+            (ext === "tiff" ? "file_from_gui-x100." : "file_from_gui.") + ext;
+          const filepath =
+            basepath + "/" + (ext === "tiff" ? "" : ext + "/") + filename;
+          console.log(filename, filepath);
+          status.textContent = "Setup...";
+          if (ext !== "tiff") {
+            await dockerSpawnSimple("rm -r " + basepath + "/" + ext + "/*");
+          }
+
+          status.textContent = "Copying " + fileMap[ext] + "...";
+          const cp_proc = dockerSpawn("cp /dev/stdin " + filepath);
+          wire_output_up(cp_proc);
+          cp_proc.stdin.end(new Uint8Array(file_buffer));
+          await waitExit(cp_proc);
+
+          if (ext === "tiff") {
+            await dockerSpawnSimple(
+              "cd /root/immortalvm/testdata/tiff; xxd -i file_from_gui-x100.tiff file_from_gui-x100.h"
+            );
+          } else if (ext !== "wav") {
+            status.textContent = "Compiling " + fileMap[ext] + "...";
+            const create_testdata = dockerSpawn(
+              "cd /root/immortalvm/testdata; ./create-testdata.sh"
+            );
+            wire_output_to(create_testdata, build_output);
+            await waitExit(create_testdata);
+          }
+
+          if (ext === "jpg" || ext === "tiff") {
+            const mode = tiffMode ? "tiff" : "jpeg";
+            console.log("Image mode: " + mode);
+            status.textContent = "Setting up program...";
+
+            await dockerSpawnSimple(
+              "cd /root/immortalvm/ivm-apps; git restore tests/static_tiff/main.c"
+            );
+            await dockerSpawnSimple(
+              "sed -i -e 's/#include \"fish_n_chips-x12.h\"//g' /root/immortalvm/ivm-apps/tests/static_" +
+                mode +
+                "/main.c"
+            );
+            await dockerSpawnSimple(
+              "sed -i -e 's/fish_n_chips/file_from_gui/g' /root/immortalvm/ivm-apps/tests/static_" +
+                mode +
+                "/main.c"
+            );
+            if (ext === "tiff")
+              await dockerSpawnSimple(
+                "sed -i -e 's/tiff_file_from_gui/file_from_gui/g' /root/immortalvm/ivm-apps/tests/static_" +
+                  mode +
+                  "/main.c"
+              );
+            await dockerSpawnSimple(
+              "sed -i -e 's/file_from_gui_x12/file_from_gui_x100/g' /root/immortalvm/ivm-apps/tests/static_" +
+                mode +
+                "/main.c"
+            );
+            await dockerSpawnSimple(
+              "sed -i -e 's/int dimension = 12;/int dimension = 100;/g' /root/immortalvm/ivm-apps/tests/static_" +
+                mode +
+                "/main.c"
+            );
+
+            status.textContent = "Compiling program...";
+            const build = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "; make"
+            );
+            wire_output_to(build, build_output, true);
+            await waitExit(build);
+
+            status.textContent = "Assembling program...";
+            const assemble = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "; ivm as static_" +
+                mode +
+                " --bin static_" +
+                mode +
+                ".b --sym /dev/null"
+            );
+            wire_output_to(assemble, build_output, true);
+            await waitExit(assemble);
+
+            status.textContent =
+              "Running program and outputting image from iVM...";
+            const mkdir = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "; mkdir -p img"
+            );
+            await waitExit(mkdir);
+            const run_output_img = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "; ivm64-emu static_" +
+                mode +
+                ".b -o img"
+            );
+            wire_output_to(run_output_img, run_output, true);
+            await waitExit(run_output_img).catch((err) => {
+              status.textContent += "\nERROR: " + String(err);
+            });
+
+            status.textContent = "Copying image output from iVM...";
+            const fetch_image = dockerSpawn(
+              "cat /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "/img/00000001.png"
+            );
+            const chunks = [];
+            fetch_image.stdout.on("data", (chunk) => chunks.push(chunk));
+            (async () => {
+              const rl = createInterface(fetch_image.stderr);
+              for await (const line of rl) {
+                console.log(line);
+              }
+            })();
+            await waitExit(fetch_image);
+            const img = build_image_element_from_chunks(
+              chunks,
+              original_filename_no_ext + ".png"
+            );
+            media_output.appendChild(img);
+          } else if (ext === "pdf") {
+            status.textContent = "Setting up program...";
+            await dockerSpawnSimple(
+              "sed -i -e 's/guide_pdfa/file_from_gui/g' /root/immortalvm/ivm-apps/tests/static_pdf/main.c"
+            );
+
+            status.textContent = "Compiling program...";
+            const build = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_pdf; make"
+            );
+            wire_output_to(build, build_output, true);
+            await waitExit(build);
+
+            status.textContent = "Assembling program...";
+            const assemble = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_" +
+                mode +
+                "; ivm as static_" +
+                mode +
+                " --bin static_" +
+                mode +
+                " --sym /dev/null"
+            );
+            wire_output_to(assemble, build_output, true);
+            await waitExit(assemble);
+
+            status.textContent =
+              "Running program and outputting image from iVM...";
+            const mkdir = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_pdf; mkdir -p img"
+            );
+            await waitExit(mkdir);
+            const run_output_img = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/build/ivm/tests/static_pdf; vm -o img -m 100000000 static_pdf.b"
+            );
+            wire_output_to(run_output_img, run_output, true);
+            await waitExit(run_output_img);
+
+            status.textContent = "Copying image output from iVM...";
+            const fetch_image = dockerSpawn(
+              "cat /root/immortalvm/ivm-apps/build/ivm/tests/static_pdf/img/00000001.png"
+            );
+            const chunks = [];
+            fetch_image.stdout.on("data", (chunk) => chunks.push(chunk));
+            (async () => {
+              const rl = createInterface(fetch_image.stderr);
+              for await (const line of rl) {
+                console.log(line);
+              }
+            })();
+            await waitExit(fetch_image);
+            const img = build_image_element_from_chunks(
+              chunks,
+              original_filename_no_ext + ".png"
+            );
+            media_output.appendChild(img);
+          } else if (ext === "wav") {
+            status.textContent = "Compiling program...";
+            const build = dockerSpawn(
+              'cd /root/immortalvm/ivm-apps/tests/static_wav; PATH="/root/ivm-compiler-bin/gcc-12.2.0-ivm64-bin/bin:$PATH" ./build.sh "' +
+                filepath +
+                '"'
+            );
+            wire_output_to(build, build_output, true);
+            await waitExit(build);
+
+            status.textContent =
+              "Running program and outputting audio file from iVM...";
+            const run = dockerSpawn(
+              "cd /root/immortalvm/ivm-apps/tests/static_wav; ivm64-emu main.b -o wav"
+            );
+            wire_output_to(run, run_output, true);
+            await waitExit(run);
+
+            status.textContent = "Copying audio output from iVM...";
+            const fetch_audio = dockerSpawn(
+              "cat /root/immortalvm/ivm-apps/tests/static_wav/wav/00000001.wav"
+            );
+            const chunks = [];
+            fetch_audio.stdout.on("data", (chunk) => chunks.push(chunk));
+            (async () => {
+              const rl = createInterface(fetch_audio.stderr);
+              for await (const line of rl) {
+                console.log(line);
+              }
+            })();
+            await waitExit(fetch_audio);
+            const audio_elem = build_audio_element_from_chunks(
+              chunks,
+              original_filename_no_ext + ".wav"
+            );
+            media_output.appendChild(audio_elem);
+          }
+
+          status.textContent = "Done!";
+        })().catch((err) => {
+          status.textContent += "\nERROR: " + String(err);
+        });
+        return false;
+      });
+    </script>
+  </body>
+</html>
