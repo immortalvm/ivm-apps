@@ -1,3 +1,16 @@
 build
+autom4te.cache
+aclocal.m4
+compile
+configure
+depcomp
+install-sh
+missing
+
+out
+
+Makefile.in
+initial-program/Makefile.in
+
 static_tests_gui/node_modules
 static_tests_gui/package-lock.json

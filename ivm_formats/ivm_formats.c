@@ -4,6 +4,7 @@
 #include "ivm_format_tiff.h"
 #include "ivm_format_zlib.h"
 #include "ivm_format_pdf.h"
+#include "ivm_format_siard.h"
 
 #include <string.h>
 
@@ -13,6 +14,7 @@ static ivm_file_format ivm_file_formats[] =
   { "afs/tiff", ivm_file_format_tiff_render, NULL },
   //  { "afs/pdf",  ivm_file_format_pdf_render, NULL },
   { "ZLIB", NULL, ivm_file_format_zlib_decode },
+  {"afs/unknown", ivm_file_format_siard_render, ivm_file_format_siard_decode},
 };
 
 unsigned ivm_file_format_count()
