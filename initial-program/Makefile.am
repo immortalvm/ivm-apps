@@ -40,6 +40,7 @@ ivmip_LDADD = \
      -ljpeg \
      -lz \
      -lm \
+     -lstdc++ \
      $(LNX_LIBS)
 
 ivmip_SOURCES = \

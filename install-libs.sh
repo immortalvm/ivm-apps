@@ -14,6 +14,40 @@ abort_with_error() {
     exit 1
 }
 
+clone() {
+    if [ ! -d $2 ]; then
+        echo clone $2...
+        git clone -q ${GIT_METHOD}$1/$2 || abort_with_error "Cloning the $2 repository failed"
+    fi
+}
+
+dl() {
+    if [ ! -f "${1##*/}" ]; then
+        echo dl ${1##*/}...
+        wget -q "$1" || abort_with_error "dl ${1##*/} failed"
+    fi
+}
+
+dl_unzip() {
+    if [ ! -f "${1##*/}" ]; then
+        dl "$1"
+        echo unzip ${1##*/}...
+        if [ -z "$2" ]; then
+            unzip -q "${1##*/}"
+        else
+            unzip -q "${1##*/}" -d "$2"
+        fi
+    fi
+}
+
+dl_untar() {
+    if [ ! -f "${1##*/}" ]; then
+        dl "$1"
+        echo "(un)tar ${1##*/}..."
+        tar xzf ${1##*/} || abort_with_error "unpacking ${1##*/} failed"
+    fi
+}
+
 # Get code
 echo "This will check-out and install all needed libraries one directory up."
 # Allow skipping the prompt
@@ -22,38 +56,47 @@ if [[ $* != *-y* ]]; then
     read
 fi
 pushd ..
-wget http://www.zlib.net/fossils/zlib-1.2.12.tar.gz || abort_with_error "downloading zlib failed"
-tar zxvf zlib-1.2.12.tar.gz  || abort_with_error "unpacking zlib failed"
-wget -qO- http://ijg.org/files/jpegsrc.v9d.tar.gz | tar xzf - || abort_with_error "downloading and unpacking the jpeg source code failed"
-git clone ${GIT_METHOD}immortalvm/testdata.git || abort_with_error "cloning the testdata repository failed"
-git clone ${GIT_METHOD}immortalvm/boxing.git || abort_with_error "cloning the boxing repository failed"
-git clone ${GIT_METHOD}immortalvm/afs.git || abort_with_error "cloning the afs repository failed"
-git clone ${GIT_METHOD}immortalvm/tiff-4.1.0 || abort_with_error "cloning the tiff repository failed"
-git clone ${GIT_METHOD}immortalvm/ivm-ghostscript || abort_with_error "cloning the ivm-ghostscript repository failed"
-git clone ${GIT_METHOD}immortalvm/ivm-doc || abort_with_error "cloning the ivm-doc repository failed"
-git clone ${GIT_METHOD}immortalvm/ivm-hex-dump || abort_with_error "cloning the ivm-hex-dump repository failed"
+dl_untar http://www.zlib.net/fossils/zlib-1.2.12.tar.gz
+dl_untar http://ijg.org/files/jpegsrc.v9d.tar.gz
+clone immortalvm testdata
+clone immortalvm boxing
+clone immortalvm afs
+clone immortalvm tiff-4.1.0
+clone immortalvm ivm-ghostscript
+clone immortalvm ivm-doc
+clone immortalvm ivm-hex-dump
+clone immortalvm ROAEshell
 
 # Get compilers - get different versions for regression testing
-wget https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip
-unzip gcc-10.2.0-ivm64-2.0-linux.zip
-wget https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip
-unzip gcc-8.3.0-ivm64-1.2rc1-linux.zip
+mkdir -p ivmc
+pushd ivmc
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.4/gcc-12.2.0-ivm64-3.4-linux.zip" "3.4"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.3/gcc-12.2.0-ivm64-3.3-linux.zip" "3.3"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.2/gcc-12.2.0-ivm64-3.2-linux.zip" "3.2"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.1/gcc-12.2.0-ivm64-3.1-linux.zip" "3.1"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/3.0/gcc-12.2.0-ivm64-3.0-linux.zip" "3.0"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.1/gcc-10.2.0-ivm64-2.1-linux.zip" "2.1"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/2.0/gcc-10.2.0-ivm64-2.0-linux.zip" "2.0"
+dl_unzip "https://github.com/immortalvm/ivm-compiler/releases/download/1.2rc1/gcc-8.3.0-ivm64-1.2rc1-linux.zip" "1.2rc1"
+popd
 
 # Get assembler
 declare -a asmver=(v0.36 v0.37)
 for a in ${asmver[@]}; do
     asm="${a}_linux-x64"
-    wget https://github.com/immortalvm/ivm-implementations/releases/download/$a/$asm.zip
-    mkdir ivm-$asm
-    pushd ivm-$asm
-    unzip ../$asm.zip
-    chmod a+rx *
-    popd
+    if [ ! -d ivm-$asm ]; then
+        wget -q https://github.com/immortalvm/ivm-implementations/releases/download/$a/$asm.zip
+        mkdir ivm-$asm
+        pushd ivm-$asm
+        unzip -q ../$asm.zip
+        chmod a+rx *
+        popd
+    fi
 done
 
 # Get vm implementations
-git clone ${GIT_METHOD}immortalvm/ivm-implementations.git || abort_with_error "cloning the ivm-implementations repository failed"
-git clone ${GIT_METHOD}immortalvm/yet-another-ivm-emulator.git || abort_with_error "cloning the yet-another-ivm-emulator repository failed"
+clone immortalvm ivm-implementations
+clone immortalvm yet-another-ivm-emulator
 
 pushd jpeg-9d
 cat << EOF > ivm64.patch
